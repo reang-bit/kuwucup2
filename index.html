@@ -85,7 +85,7 @@
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.8);
-            display: flex;
+            display: none;
             justify-content: center;
             align-items: center;
             z-index: 1000;
@@ -122,6 +122,33 @@
             font-size: 13px;
             margin-top: 5px;
             display: none;
+        }
+        /* Loader Overlay */
+        #loading-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 46, 36, 0.85);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            color: var(--accent-color);
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border-left-color: var(--accent-color);
+            animation: spin 1s linear infinite;
+            margin-bottom: 15px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
         /* Bracket Layout */
         .bracket-container {
@@ -176,11 +203,22 @@
         .team-row {
             display: flex;
             justify-content: space-between;
+            align-items: center;
             padding: 3px 5px;
             margin: 2px 0;
             background: #f8f9fa;
             border-radius: 3px;
             border-left: 3px solid var(--primary-color);
+        }
+        .team-score {
+            font-weight: bold;
+            background: #e2e8f0;
+            padding: 1px 6px;
+            border-radius: 3px;
+            font-size: 10px;
+            color: #1b4d3e;
+            min-width: 14px;
+            text-align: center;
         }
         .center-stage {
             display: flex;
@@ -278,10 +316,11 @@
             border-radius: 0 4px 4px 0;
         }
         .score-input {
-            width: 30px;
+            width: 40px;
             text-align: center;
             border: 1px solid #ccc;
             border-radius: 3px;
+            padding: 4px;
         }
         footer {
             background-color: #0a1f18;
@@ -305,8 +344,14 @@
 </head>
 <body>
 
+    <!-- Loading Overlay -->
+    <div id="loading-overlay">
+        <div class="spinner"></div>
+        <span>Menghubungkan ke Google Spreadsheet...</span>
+    </div>
+
     <!-- Password Modal -->
-    <div id="auth-modal" style="display:none;">
+    <div id="auth-modal">
         <div class="modal-content">
             <h3>Autentikasi Admin</h3>
             <p>Masukkan password untuk mengakses fitur ini:</p>
@@ -332,12 +377,12 @@
             <button class="nav-btn" onclick="requestAdminTab('scores')">3. Input Skor & Pemenang (Admin)</button>
         </div>
 
-        <!-- TAB 1: BAGAN TURNAMEN KIRI KANAN -->
+        <!-- TAB 1: BAGAN TURNAMEN -->
         <div id="tab-bracket" class="section active">
             <h2>Bagan Resmi Kuwu Cup 2 Desa Jagapura Lor 2026 (Sisi Kiri & Kanan)</h2>
             <div class="notice">
                 <strong>Informasi:</strong> Jadwal libur pada : Rabu, 21 Oktober 2026 dan Sabtu 24 Oktober 2026<br>
-                <em>Waktu pertandingan bersifat fleksibel, suatu saat bisa berubah.</em>
+                <em>Waktu pertandingan bersifat fleksibel. Skor otomatis tampil di samping nama tim berdasarkan input admin & Spreadsheet.</em>
             </div>
             
             <div class="bracket-container">
@@ -382,22 +427,20 @@
             <p>Masukkan skor pertandingan untuk mengupdate pemenang secara otomatis ke babak selanjutnya:</p>
             <div id="match-scores-container"></div>
         </div>
-        <!-- FOOTER / COPYRIGHT -->
-    <footer>
-        &copy; 2026 <span>By : Hanip Anpal, S.Pd</span>. All Rights Reserved. | Kuwu Cup 2 Jagapura Lor.
-    </footer>
-    </div>
+
+        <footer>
+            &copy; 2026 <span>By : Hanip Anpal, S.Pd</span>. All Rights Reserved. | Kuwu Cup 2 Jagapura Lor.
+        </footer>
     </div>
 
     <script>
-        // 32 Tim: Tim 0-15 di Sisi Kiri, Tim 16-31 di Sisi Kanan
+        // Masukkan Web App URL dari Google Apps Script di sini
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwVjBkLDmaFKIttcgAXKQFF4MzMx5W6q9yntsWjS0rowFIiefLj_QNXv02kEWPxTPp-/exec";
+
         let teams = Array.from({length: 32}, (_, i) => `Tim Peserta ${i + 1}`);
         let targetTab = '';
-
-        // Data skor 32 Besar (16 Pertandingan)
         let scoresData = Array.from({length: 16}, () => ({s1: '', s2: ''}));
 
-        // Data jadwal pertandingan (Total 31 pertandingan untuk turnamen sistem gugur 32 tim)
         let matchSchedules = Array.from({length: 31}, (_, i) => {
             let babak = "32 Besar (Sisi Kiri)";
             if (i >= 8 && i < 16) babak = "32 Besar (Sisi Kanan)";
@@ -417,6 +460,38 @@
             };
         });
 
+        // Load data dari Spreadsheet saat halaman pertama kali dibuka
+        async function loadDataFromSheet() {
+            if (WEB_APP_URL === "MASUKKAN_WEB_APP_URL_ANDA_DI_SINI") {
+                document.getElementById('loading-overlay').style.display = 'none';
+                return;
+            }
+            try {
+                let response = await fetch(`${WEB_APP_URL}?action=getData`);
+                let result = await response.json();
+                
+                if (result.teams && result.teams.length === 32) {
+                    teams = result.teams;
+                }
+                if (result.schedules && result.schedules.length === 31) {
+                    result.schedules.forEach((item, index) => {
+                        if (matchSchedules[index]) {
+                            matchSchedules[index].datetime = item.datetime || matchSchedules[index].datetime;
+                            matchSchedules[index].ket = item.ket || matchSchedules[index].ket;
+                        }
+                    });
+                }
+                if (result.scores && result.scores.length === 16) {
+                    scoresData = result.scores;
+                }
+            } catch (error) {
+                console.error("Gagal memuat data dari Spreadsheet:", error);
+            } finally {
+                document.getElementById('loading-overlay').style.display = 'none';
+                renderBracket();
+            }
+        }
+
         function initTeamInputs() {
             const container = document.getElementById('teams-input-container');
             container.innerHTML = '';
@@ -431,12 +506,29 @@
             }
         }
 
-        function saveTeams() {
+        async function saveTeams() {
             for (let i = 0; i < 32; i++) {
                 const val = document.getElementById(`team-${i}`).value;
                 if (val) teams[i] = val;
             }
-            alert('Daftar 32 tim berhasil disimpan! Bagan kiri & kanan telah diperbarui.');
+            
+            document.getElementById('loading-overlay').style.display = 'flex';
+            document.getElementById('loading-overlay').querySelector('span').innerText = 'Menyimpan daftar tim ke Spreadsheet...';
+
+            try {
+                await fetch(WEB_APP_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'saveTeams', teams: teams })
+                });
+                alert('Daftar 32 tim berhasil disimpan ke Spreadsheet & diperbarui!');
+            } catch (err) {
+                console.error(err);
+                alert('Gagal menyimpan ke spreadsheet secara online.');
+            }
+
+            document.getElementById('loading-overlay').style.display = 'none';
             renderBracket();
             renderSchedule();
             switchTab('bracket');
@@ -469,9 +561,7 @@
         }
 
         function handlePasswordKey(event) {
-            if (event.key === 'Enter') {
-                verifyPassword();
-            }
+            if (event.key === 'Enter') verifyPassword();
         }
 
         function switchTab(tabId) {
@@ -497,9 +587,7 @@
             }
         }
 
-        // Fungsi Mendapatkan Nama Tim Berdasarkan Struktur Bagan Otomatis
         function getTeamNameForMatch(matchIndex, teamSlot) {
-            // 32 Besar (Match 0 - 15)
             if (matchIndex < 8) {
                 return teamSlot === 1 ? teams[matchIndex * 2] : teams[matchIndex * 2 + 1];
             } else if (matchIndex >= 8 && matchIndex < 16) {
@@ -507,69 +595,46 @@
                 return teamSlot === 1 ? teams[16 + idx * 2] : teams[16 + idx * 2 + 1];
             }
 
-            // 16 Besar (Match 16 - 23)
             if (matchIndex >= 16 && matchIndex < 24) {
-                let baseM = 16 + (matchIndex - 16) * 2;
-                let mA = baseM - 16; 
-                let mB = baseM - 15;
-                // Mapping presisi sumber match 32 besar
                 let sourceA = (matchIndex - 16) * 2;
                 let sourceB = (matchIndex - 16) * 2 + 1;
-                if(matchIndex >= 20) { // Sisi Kanan 16 Besar
+                if (matchIndex >= 20) {
                     sourceA = 8 + (matchIndex - 20) * 2;
                     sourceB = 8 + (matchIndex - 20) * 2 + 1;
                 }
                 return teamSlot === 1 ? getWinner(sourceA) : getWinner(sourceB);
             }
 
-            // Perempat Final (Match 24 - 27)
             if (matchIndex >= 24 && matchIndex < 28) {
-                let sourceMatch1, sourceMatch2;
-                if (matchIndex === 24) { sourceMatch1 = 16; sourceMatch2 = 17; }
-                else if (matchIndex === 25) { sourceMatch1 = 18; sourceMatch2 = 19; }
-                else if (matchIndex === 26) { sourceMatch1 = 20; sourceMatch2 = 21; }
-                else if (matchIndex === 27) { sourceMatch1 = 22; sourceMatch2 = 23; }
-                return teamSlot === 1 ? getWinner16(sourceMatch1) : getWinner16(sourceMatch2);
+                let s1, s2;
+                if (matchIndex === 24) { s1 = 16; s2 = 17; }
+                else if (matchIndex === 25) { s1 = 18; s2 = 19; }
+                else if (matchIndex === 26) { s1 = 20; s2 = 21; }
+                else if (matchIndex === 27) { s1 = 22; s2 = 23; }
+                return teamSlot === 1 ? getWinner16(s1) : getWinner16(s2);
             }
 
-            // Semifinal (Match 28 & 29)
-            if (matchIndex === 28) {
-                return teamSlot === 1 ? getWinnerQF(24) : getWinnerQF(25);
-            }
-            if (matchIndex === 29) {
-                return teamSlot === 1 ? getWinnerQF(26) : getWinnerQF(27);
-            }
-
-            // Final (Match 30)
-            if (matchIndex === 30) {
-                return teamSlot === 1 ? getWinnerSF(28) : getWinnerSF(29);
-            }
+            if (matchIndex === 28) return teamSlot === 1 ? getWinnerQF(24) : getWinnerQF(25);
+            if (matchIndex === 29) return teamSlot === 1 ? getWinnerQF(26) : getWinnerQF(27);
+            if (matchIndex === 30) return teamSlot === 1 ? getWinnerSF(28) : getWinnerSF(29);
 
             return "Menunggu Tim";
         }
 
-        // Helper Pemenang 32 Besar
         function getWinner(matchIdx) {
             let s1 = scoresData[matchIdx].s1;
             let s2 = scoresData[matchIdx].s2;
             if (s1 === '' || s2 === '' || s1 === s2) return `[Pemenang M${matchIdx + 1}]`;
             let t1 = matchIdx < 8 ? teams[matchIdx * 2] : teams[16 + (matchIdx - 8) * 2];
             let t2 = matchIdx < 8 ? teams[matchIdx * 2 + 1] : teams[16 + (matchIdx - 8) * 2 + 1];
-            return s1 > s2 ? t1 : t2;
+            return Number(s1) > Number(s2) ? t1 : t2;
         }
 
-        // Helper Pemenang 16 Besar (Mock / Placeholder logic for automated advancement)
-        function getWinner16(mIdx) {
-            return `[Pemenang M${mIdx + 1}]`;
-        }
-        function getWinnerQF(mIdx) {
-            return `[Pemenang M${mIdx + 1}]`;
-        }
-        function getWinnerSF(mIdx) {
-            return `[Pemenang M${mIdx + 1}]`;
-        }
+        function getWinner16(mIdx) { return `[Pemenang M${mIdx + 1}]`; }
+        function getWinnerQF(mIdx) { return `[Pemenang M${mIdx + 1}]`; }
+        function getWinnerSF(mIdx) { return `[Pemenang M${mIdx + 1}]`; }
 
-        function updateMatchScore(matchIndex) {
+        async function updateMatchScore(matchIndex) {
             const s1Input = document.getElementById(`score-1-${matchIndex}`);
             const s2Input = document.getElementById(`score-2-${matchIndex}`);
             
@@ -582,26 +647,36 @@
             }
 
             if (s1 === s2) {
-                alert('Skor seri tidak diperbolehkan dalam sistem gugur bagan! Harus ada pemenang (lanjut adu penalti jika perlu).');
+                alert('Skor seri tidak diperbolehkan dalam sistem gugur bagan! Harus ada pemenang.');
                 return;
             }
 
             scoresData[matchIndex].s1 = s1;
             scoresData[matchIndex].s2 = s2;
 
-            let t1 = matchIndex < 8 ? teams[matchIndex * 2] : teams[16 + (matchIndex - 8) * 2];
-            let t2 = matchIndex < 8 ? teams[matchIndex * 2 + 1] : teams[16 + (matchIndex - 8) * 2 + 1];
-            let winner = s1 > s2 ? t1 : t2;
+            document.getElementById('loading-overlay').style.display = 'flex';
+            document.getElementById('loading-overlay').querySelector('span').innerText = 'Menyimpan skor ke Spreadsheet...';
 
-            alert(`Skor tersimpan! Pemenang Match ${matchIndex + 1} (${winner}) otomatis maju ke babak berikutnya.`);
+            try {
+                await fetch(WEB_APP_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'saveScores', scores: scoresData })
+                });
+                alert(`Skor tersimpan online! Pemenang Match ${matchIndex + 1} otomatis maju.`);
+            } catch (err) {
+                console.error(err);
+                alert('Skor diperbarui lokal, gagal sync online.');
+            }
+
+            document.getElementById('loading-overlay').style.display = 'none';
             renderBracket();
         }
 
-        // Render Bagan Kiri, Tengah, Kanan secara Dinamis
         function renderBracket() {
             const container = document.getElementById('bracket-layout-view');
             
-            // SISI KIRI
             let leftHTML = `
                 <div class="bracket-side">
                     <div class="bracket-column">
@@ -619,18 +694,9 @@
                 </div>
             `;
 
-            // TENGAH (Semifinal & Final)
             let sf1Time = matchSchedules[28].datetime;
             let sf2Time = matchSchedules[29].datetime;
             let finTime = matchSchedules[30].datetime;
-
-            let sf1Team1 = getTeamNameForMatch(28, 1);
-            let sf1Team2 = getTeamNameForMatch(28, 2);
-            let sf2Team1 = getTeamNameForMatch(29, 1);
-            let sf2Team2 = getTeamNameForMatch(29, 2);
-            
-            let finalTeam1 = getTeamNameForMatch(30, 1);
-            let finalTeam2 = getTeamNameForMatch(30, 2);
 
             let centerHTML = `
                 <div class="center-stage">
@@ -639,18 +705,17 @@
                     <h3>BAGAN UTAMA</h3>
                     
                     <div style="width:100%; background:rgba(255,255,255,0.1); padding:8px; border-radius:5px; margin-bottom:8px; font-size:11px;">
-                        <strong>SEMIFINAL (I)</strong><br>${sf1Time}<br><em>${sf1Team1} vs ${sf1Team2}</em>
+                        <strong>SEMIFINAL (I)</strong><br>${sf1Time}<br><em>${getTeamNameForMatch(28, 1)} vs ${getTeamNameForMatch(28, 2)}</em>
                     </div>
                     <div style="width:100%; background:rgba(255,255,255,0.1); padding:8px; border-radius:5px; margin-bottom:8px; font-size:11px;">
-                        <strong>SEMIFINAL (II)</strong><br>${sf2Time}<br><em>${sf2Team1} vs ${sf2Team2}</em>
+                        <strong>SEMIFINAL (II)</strong><br>${sf2Time}<br><em>${getTeamNameForMatch(29, 1)} vs ${getTeamNameForMatch(29, 2)}</em>
                     </div>
                     <div style="width:100%; background:var(--accent-color); color:#000; padding:10px; border-radius:5px; font-weight:bold; font-size:11px;">
-                        FINAL (${finTime})<br><span>${finalTeam1} vs ${finalTeam2}</span>
+                        FINAL (${finTime})<br><span>${getTeamNameForMatch(30, 1)} vs ${getTeamNameForMatch(30, 2)}</span>
                     </div>
                 </div>
             `;
 
-            // SISI KANAN
             let rightHTML = `
                 <div class="bracket-side" style="flex-direction: row-reverse;">
                     <div class="bracket-column">
@@ -677,13 +742,22 @@
                 let mIdx = startMatchIdx + i;
                 let t1 = getTeamNameForMatch(mIdx, 1);
                 let t2 = getTeamNameForMatch(mIdx, 2);
-                let timeStr = matchSchedules[mIdx].datetime;
+                
+                // Ambil skor jika ada (khusus untuk putaran 32 besar yang memiliki input skor langsung)
+                let score1 = (mIdx < 16 && scoresData[mIdx] && scoresData[mIdx].s1 !== '') ? scoresData[mIdx].s1 : '-';
+                let score2 = (mIdx < 16 && scoresData[mIdx] && scoresData[mIdx].s2 !== '') ? scoresData[mIdx].s2 : '-';
 
                 html += `
                     <div class="match-card">
-                        <div class="match-date">M-${mIdx+1} | ${timeStr}</div>
-                        <div class="team-row"><span>${t1}</span></div>
-                        <div class="team-row"><span>${t2}</span></div>
+                        <div class="match-date">M-${mIdx+1} | ${matchSchedules[mIdx].datetime}</div>
+                        <div class="team-row">
+                            <span>${t1}</span>
+                            <span class="team-score">${score1}</span>
+                        </div>
+                        <div class="team-row">
+                            <span>${t2}</span>
+                            <span class="team-score">${score2}</span>
+                        </div>
                     </div>
                 `;
             }
@@ -696,59 +770,46 @@
             
             for (let i = 0; i < matchSchedules.length; i++) {
                 let match = matchSchedules[i];
-                let teamMatchText = `${getTeamNameForMatch(i, 1)} vs ${getTeamNameForMatch(i, 2)}`;
-
                 tbody.innerHTML += `
                     <tr>
                         <td>${i + 1}</td>
                         <td><strong>${match.babak}</strong> (Match ${i+1})</td>
-                        <td>${teamMatchText}</td>
-                        <td><input type="text" class="schedule-input" id="sched-time-${i}" value="${match.datetime}" placeholder="Contoh: Rabu, 23/10/2026 15:30"></td>
-                        <td><input type="text" class="schedule-input" id="sched-ket-${i}" value="${match.ket}" placeholder="Keterangan"></td>
+                        <td>${getTeamNameForMatch(i, 1)} vs ${getTeamNameForMatch(i, 2)}</td>
+                        <td><input type="text" class="schedule-input" id="sched-time-${i}" value="${match.datetime}"></td>
+                        <td><input type="text" class="schedule-input" id="sched-ket-${i}" value="${match.ket}"></td>
                     </tr>
                 `;
             }
         }
 
-        function saveScheduleSettings() {
+        async function saveScheduleSettings() {
             for (let i = 0; i < matchSchedules.length; i++) {
                 const timeVal = document.getElementById(`sched-time-${i}`).value;
                 const ketVal = document.getElementById(`sched-ket-${i}`).value;
                 if (timeVal) matchSchedules[i].datetime = timeVal;
                 if (ketVal) matchSchedules[i].ket = ketVal;
             }
-            alert('Jadwal pertandingan berhasil diperbarui!');
+
+            document.getElementById('loading-overlay').style.display = 'flex';
+            document.getElementById('loading-overlay').querySelector('span').innerText = 'Menyimpan jadwal ke Spreadsheet...';
+
+            try {
+                await fetch(WEB_APP_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'saveSchedules', schedules: matchSchedules })
+                });
+                alert('Jadwal pertandingan berhasil diperbarui online!');
+            } catch (err) {
+                console.error(err);
+                alert('Gagal memperbarui jadwal ke server online.');
+            }
+
+            document.getElementById('loading-overlay').style.display = 'none';
             renderBracket();
             switchTab('bracket');
         }
-        // Ganti dengan URL Web App Google Apps Script Anda
-const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwVjBkLDmaFKIttcgAXKQFF4MzMx5W6q9yntsWjS0rowFIiefLj_QNXv02kEWPxTPp-/exec";
-
-// Fungsi untuk mengambil data dari Google Spreadsheet saat halaman dibuka
-async function loadDataFromSheet() {
-    try {
-        let response = await fetch(`${WEB_APP_URL}?action=getData`);
-        let data = await response.json();
-        
-        if (data.teams && data.teams.length > 0) teams = data.teams;
-        if (data.schedules && data.schedules.length > 0) {
-            data.schedules.forEach((item, index) => {
-                if (matchSchedules[index]) {
-                    matchSchedules[index].datetime = item.datetime;
-                    matchSchedules[index].ket = item.ket;
-                }
-            });
-        }
-        if (data.scores && data.scores.length > 0) scoresData = data.scores;
-        
-        renderBracket();
-    } catch (error) {
-        console.error("Gagal memuat data dari Spreadsheet:", error);
-    }
-}
-
-// Panggil fungsi ini saat script dijalankan / halaman dimuat
-loadDataFromSheet();
 
         function renderScoresInput() {
             const container = document.getElementById('match-scores-container');
@@ -758,15 +819,12 @@ loadDataFromSheet();
                 let t1 = i < 8 ? teams[i*2] : teams[16 + (i-8)*2];
                 let t2 = i < 8 ? teams[i*2+1] : teams[16 + (i-8)*2+1];
                 
-                let val1 = scoresData[i].s1 !== '' ? scoresData[i].s1 : '';
-                let val2 = scoresData[i].s2 !== '' ? scoresData[i].s2 : '';
-
                 container.innerHTML += `
                     <div style="background:#f9f9f9; padding:10px; margin-bottom:8px; border-radius:5px; display:flex; justify-content:space-between; align-items:center; color:#333; flex-wrap:wrap; gap:10px;">
                         <span>[${side}] Match ${i+1}: <strong>${t1}</strong> vs <strong>${t2}</strong></span>
                         <div>
-                            <input type="number" id="score-1-${i}" class="score-input" min="0" value="${val1}"> - 
-                            <input type="number" id="score-2-${i}" class="score-input" min="0" value="${val2}">
+                            <input type="number" id="score-1-${i}" class="score-input" min="0" value="${scoresData[i].s1}"> - 
+                            <input type="number" id="score-2-${i}" class="score-input" min="0" value="${scoresData[i].s2}">
                             <button onclick="updateMatchScore(${i})" style="margin-left:10px; padding:6px 12px; background:var(--primary-color); color:white; border:none; border-radius:3px; cursor:pointer;">Update</button>
                         </div>
                     </div>
@@ -774,7 +832,8 @@ loadDataFromSheet();
             }
         }
 
-        renderBracket();
+        // Jalankan pemuatan data saat halaman dimuat
+        window.onload = loadDataFromSheet;
     </script>
 </body>
 </html>
