@@ -467,23 +467,28 @@
         return;
     }
     try {
-        // Penambahan parameter _t (timestamp) agar memaksa server memberi data baru (anti-cache)
+        // Tambahkan timestamp agar setiap reload mengambil data terbaru dari server (anti-cache)
         let response = await fetch(`${WEB_APP_URL}?action=getData&_t=${new Date().getTime()}`);
         let result = await response.json();
         
+        // Hanya update jika data di spreadsheet sudah diisi/tersedia
         if (result.teams && result.teams.length === 32) {
             teams = result.teams;
         }
         if (result.schedules && result.schedules.length === 31) {
             result.schedules.forEach((item, index) => {
-                if (matchSchedules[index]) {
-                    matchSchedules[index].datetime = item.datetime || matchSchedules[index].datetime;
+                if (matchSchedules[index] && item.datetime) {
+                    matchSchedules[index].datetime = item.datetime;
                     matchSchedules[index].ket = item.ket || matchSchedules[index].ket;
                 }
             });
         }
         if (result.scores && result.scores.length === 16) {
-            scoresData = result.scores;
+            // Hanya masukkan skor jika ada isinya
+            result.scores.forEach((sc, idx) => {
+                if (sc.s1 !== "" && sc.s1 !== undefined) scoresData[idx].s1 = sc.s1;
+                if (sc.s2 !== "" && sc.s2 !== undefined) scoresData[idx].s2 = sc.s2;
+            });
         }
     } catch (error) {
         console.error("Gagal memuat data dari Spreadsheet:", error);
@@ -491,8 +496,7 @@
         document.getElementById('loading-overlay').style.display = 'none';
         renderBracket();
     }
-}
-        function initTeamInputs() {
+}        function initTeamInputs() {
             const container = document.getElementById('teams-input-container');
             container.innerHTML = '';
             for (let i = 0; i < 32; i++) {
