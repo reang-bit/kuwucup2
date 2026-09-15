@@ -462,32 +462,32 @@
 
         // Load data dari Spreadsheet saat halaman pertama kali dibuka
         async function loadDataFromSheet() {
-    if (WEB_APP_URL === "https://script.google.com/macros/s/AKfycbwVjBkLDmaFKIttcgAXKQFF4MzMx5W6q9yntsWjS0rowFIiefLj_QNXv02kEWPxTPp-/exec") {
-        document.getElementById('loading-overlay').style.display = 'none';
-        return;
-    }
     try {
-        // Tambahkan timestamp agar setiap reload mengambil data terbaru dari server (anti-cache)
         let response = await fetch(`${WEB_APP_URL}?action=getData&_t=${new Date().getTime()}`);
         let result = await response.json();
         
-        // Hanya update jika data di spreadsheet sudah diisi/tersedia
+        // Ambil data Teams dari Spreadsheet jika tersedia (harus berjumlah 32)
         if (result.teams && result.teams.length === 32) {
             teams = result.teams;
         }
-        if (result.schedules && result.schedules.length === 31) {
+        
+        // Ambil data Schedules jika tersedia
+        if (result.schedules && result.schedules.length > 0) {
             result.schedules.forEach((item, index) => {
-                if (matchSchedules[index] && item.datetime) {
-                    matchSchedules[index].datetime = item.datetime;
-                    matchSchedules[index].ket = item.ket || matchSchedules[index].ket;
+                if (matchSchedules[index]) {
+                    if (item.datetime) matchSchedules[index].datetime = item.datetime;
+                    if (item.ket) matchSchedules[index].ket = item.ket;
                 }
             });
         }
-        if (result.scores && result.scores.length === 16) {
-            // Hanya masukkan skor jika ada isinya
+        
+        // Ambil data Scores jika tersedia
+        if (result.scores && result.scores.length > 0) {
             result.scores.forEach((sc, idx) => {
-                if (sc.s1 !== "" && sc.s1 !== undefined) scoresData[idx].s1 = sc.s1;
-                if (sc.s2 !== "" && sc.s2 !== undefined) scoresData[idx].s2 = sc.s2;
+                if (scoresData[idx]) {
+                    scoresData[idx].s1 = (sc.s1 !== undefined && sc.s1 !== "") ? sc.s1 : '';
+                    scoresData[idx].s2 = (sc.s2 !== undefined && sc.s2 !== "") ? sc.s2 : '';
+                }
             });
         }
     } catch (error) {
@@ -496,7 +496,9 @@
         document.getElementById('loading-overlay').style.display = 'none';
         renderBracket();
     }
-}        function initTeamInputs() {
+}
+        
+        function initTeamInputs() {
             const container = document.getElementById('teams-input-container');
             container.innerHTML = '';
             for (let i = 0; i < 32; i++) {
