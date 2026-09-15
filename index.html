@@ -462,36 +462,36 @@
 
         // Load data dari Spreadsheet saat halaman pertama kali dibuka
         async function loadDataFromSheet() {
-            if (WEB_APP_URL === "https://script.google.com/macros/s/AKfycbwVjBkLDmaFKIttcgAXKQFF4MzMx5W6q9yntsWjS0rowFIiefLj_QNXv02kEWPxTPp-/exec") {
-                document.getElementById('loading-overlay').style.display = 'none';
-                return;
-            }
-            try {
-                let response = await fetch(`${WEB_APP_URL}?action=getData`);
-                let result = await response.json();
-                
-                if (result.teams && result.teams.length === 32) {
-                    teams = result.teams;
-                }
-                if (result.schedules && result.schedules.length === 31) {
-                    result.schedules.forEach((item, index) => {
-                        if (matchSchedules[index]) {
-                            matchSchedules[index].datetime = item.datetime || matchSchedules[index].datetime;
-                            matchSchedules[index].ket = item.ket || matchSchedules[index].ket;
-                        }
-                    });
-                }
-                if (result.scores && result.scores.length === 16) {
-                    scoresData = result.scores;
-                }
-            } catch (error) {
-                console.error("Gagal memuat data dari Spreadsheet:", error);
-            } finally {
-                document.getElementById('loading-overlay').style.display = 'none';
-                renderBracket();
-            }
+    if (WEB_APP_URL === "https://script.google.com/macros/s/AKfycbwVjBkLDmaFKIttcgAXKQFF4MzMx5W6q9yntsWjS0rowFIiefLj_QNXv02kEWPxTPp-/exec") {
+        document.getElementById('loading-overlay').style.display = 'none';
+        return;
+    }
+    try {
+        // Penambahan parameter _t (timestamp) agar memaksa server memberi data baru (anti-cache)
+        let response = await fetch(`${WEB_APP_URL}?action=getData&_t=${new Date().getTime()}`);
+        let result = await response.json();
+        
+        if (result.teams && result.teams.length === 32) {
+            teams = result.teams;
         }
-
+        if (result.schedules && result.schedules.length === 31) {
+            result.schedules.forEach((item, index) => {
+                if (matchSchedules[index]) {
+                    matchSchedules[index].datetime = item.datetime || matchSchedules[index].datetime;
+                    matchSchedules[index].ket = item.ket || matchSchedules[index].ket;
+                }
+            });
+        }
+        if (result.scores && result.scores.length === 16) {
+            scoresData = result.scores;
+        }
+    } catch (error) {
+        console.error("Gagal memuat data dari Spreadsheet:", error);
+    } finally {
+        document.getElementById('loading-overlay').style.display = 'none';
+        renderBracket();
+    }
+}
         function initTeamInputs() {
             const container = document.getElementById('teams-input-container');
             container.innerHTML = '';
