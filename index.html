@@ -721,6 +721,34 @@
             renderBracket();
             switchTab('bracket');
         }
+        // Ganti dengan URL Web App Google Apps Script Anda
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwVjBkLDmaFKIttcgAXKQFF4MzMx5W6q9yntsWjS0rowFIiefLj_QNXv02kEWPxTPp-/exec";
+
+// Fungsi untuk mengambil data dari Google Spreadsheet saat halaman dibuka
+async function loadDataFromSheet() {
+    try {
+        let response = await fetch(`${WEB_APP_URL}?action=getData`);
+        let data = await response.json();
+        
+        if (data.teams && data.teams.length > 0) teams = data.teams;
+        if (data.schedules && data.schedules.length > 0) {
+            data.schedules.forEach((item, index) => {
+                if (matchSchedules[index]) {
+                    matchSchedules[index].datetime = item.datetime;
+                    matchSchedules[index].ket = item.ket;
+                }
+            });
+        }
+        if (data.scores && data.scores.length > 0) scoresData = data.scores;
+        
+        renderBracket();
+    } catch (error) {
+        console.error("Gagal memuat data dari Spreadsheet:", error);
+    }
+}
+
+// Panggil fungsi ini saat script dijalankan / halaman dimuat
+loadDataFromSheet();
 
         function renderScoresInput() {
             const container = document.getElementById('match-scores-container');
