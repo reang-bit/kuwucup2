@@ -435,7 +435,7 @@
             <h2>Bagan Resmi Kuwu Cup 2 Desa Jagapura Lor 2026 (Sisi Kiri & Kanan)</h2>
             <div class="notice">
                 <strong>Informasi:</strong> Jadwal libur pada : Rabu, 21 Oktober 2026 dan Sabtu 24 Oktober 2026<br>
-                <em>Klik pada kartu pertandingan mana saja untuk melihat detail pencetak gol dan kartu per masing-masing tim.</em>
+                <em>Klik pada pertandingan mana saja untuk melihat detail pencetak gol dan kartu per masing-masing tim.</em>
             </div>
             
             <div class="bracket-container">
@@ -561,7 +561,7 @@
                     matchDetails = result.matchDetails;
                 }
             } catch (error) {
-                console.error("Gagal memuat data dari Spreadsheet:", error);
+                console.error("Gagal memuat data ....", error);
             } finally {
                 document.getElementById('loading-overlay').style.display = 'none';
                 renderBracket();
@@ -590,7 +590,7 @@
             }
             
             document.getElementById('loading-overlay').style.display = 'flex';
-            document.getElementById('loading-overlay').querySelector('span').innerText = 'Menyimpan daftar tim ke Spreadsheet...';
+            document.getElementById('loading-overlay').querySelector('span').innerText = 'Proses menyimpan ...';
 
             try {
                 await fetch(WEB_APP_URL, {
@@ -599,10 +599,10 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ action: 'saveTeams', teams: teams })
                 });
-                alert('Daftar 32 tim berhasil disimpan ke Spreadsheet & diperbarui!');
+                alert('Daftar tim berhasil disimpan ');
             } catch (err) {
                 console.error(err);
-                alert('Gagal menyimpan ke spreadsheet secara online.');
+                alert('Gagal menyimpan database.');
             }
 
             document.getElementById('loading-overlay').style.display = 'none';
@@ -750,7 +750,7 @@
             matchDetails[matchIndex].notes = document.getElementById(`notes-${matchIndex}`).value;
 
             document.getElementById('loading-overlay').style.display = 'flex';
-            document.getElementById('loading-overlay').querySelector('span').innerText = 'Menyimpan skor & detail ke Spreadsheet...';
+            document.getElementById('loading-overlay').querySelector('span').innerText = 'Menyimpan detail pertandingan...';
 
             try {
                 await fetch(WEB_APP_URL, {
@@ -765,7 +765,7 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ action: 'saveMatchDetails', matchDetails: matchDetails })
                 });
-                alert(`Data Match ${matchIndex + 1} berhasil disimpan online!`);
+                alert(`Data Match ${matchIndex + 1} berhasil disimpan !`);
             } catch (err) {
                 console.error(err);
                 alert('Tersimpan lokal, gagal sinkronisasi online.');
@@ -877,7 +877,7 @@
 
             let centerHTML = `
                 <div class="center-stage">
-                    <div style="font-size:11px; font-weight:bold; color:var(--accent-color);">SEMARAK KUWU CUP 2</div>
+                    <div style="font-size:11px; font-weight:bold; color:var(--accent-color);"> KUWU CUP 2</div>
                     <div class="trophy-box">🏆</div>
                     <h3>BAGAN UTAMA</h3>
                     
@@ -980,10 +980,10 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ action: 'saveSchedules', schedules: matchSchedules })
                 });
-                alert('Jadwal pertandingan berhasil diperbarui online!');
+                alert('Jadwal pertandingan berhasil di update');
             } catch (err) {
                 console.error(err);
-                alert('Gagal memperbarui jadwal ke server online.');
+                alert('Gagal memperbarui jadwal pertaningan.');
             }
 
             document.getElementById('loading-overlay').style.display = 'none';
