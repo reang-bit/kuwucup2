@@ -564,13 +564,23 @@
                             scoresData[idx].s1 = (sc.s1 !== undefined && sc.s1 !== "") ? sc.s1 : '';
                             scoresData[idx].s2 = (sc.s2 !== undefined && sc.s2 !== "") ? sc.s2 : '';
                             scoresData[idx].status = sc.status || 'UPCOMING';
-                            scoresData[idx].startTime = sc.startTime || null;
+                            scoresData[idx].startTime = sc.startTime ? Number(sc.startTime) : null;
                             
-                            let rawTime = sc.liveTime || '00:00';
-                            if (rawTime.length > 10 || rawTime.includes('1899')) {
-                                rawTime = '00:00';
+                            // Jika status LIVE dan ada startTime, hitung ulang waktu berjalan secara akurat berdasarkan selisih waktu saat ini
+                            if (scoresData[idx].status === 'LIVE' && scoresData[idx].startTime) {
+                                let now = new Date().getTime();
+                                let elapsedSec = Math.floor((now - scoresData[idx].startTime) / 1000);
+                                if (elapsedSec < 0) elapsedSec = 0;
+                                let m = Math.floor(elapsedSec / 60);
+                                let s = elapsedSec % 60;
+                                scoresData[idx].liveTime = (m < 10 ? "0" : "") + m + ":" + (s < 10 ? "0" : "") + s;
+                            } else {
+                                let rawTime = sc.liveTime || '00:00';
+                                if (rawTime.length > 10 || rawTime.includes('1899')) {
+                                    rawTime = '00:00';
+                                }
+                                scoresData[idx].liveTime = rawTime;
                             }
-                            scoresData[idx].liveTime = rawTime;
                         }
                     });
                 }
@@ -800,13 +810,12 @@
             renderTopScorers();
         }
 
-        // Fungsi Timer Berbasis Timestamp Realtime Global
         function startMatchTimer(matchIndex) {
             let statusSelect = document.getElementById(`status-${matchIndex}`);
             statusSelect.value = "LIVE";
             scoresData[matchIndex].status = "LIVE";
             
-            // Simpan waktu patokan mulai (timestamp sekarang) agar perangkat lain tahu detik ke berapa laga berjalan
+            // Set timestamp mulai baru
             scoresData[matchIndex].startTime = new Date().getTime();
             scoresData[matchIndex].liveTime = "00:00";
 
@@ -818,7 +827,7 @@
             }
 
             startGlobalLiveTicker(matchIndex);
-            saveMatchScoreAndDetailSilent(matchIndex); // Sinkronkan ke cloud secara diam-diam
+            saveMatchScoreAndDetailSilent(matchIndex);
 
             alert(`Match ${matchIndex + 1}: Timer live real-time dimulai.`);
         }
@@ -836,10 +845,9 @@
                 let elapsedSeconds = 0;
                 if (sc.startTime) {
                     let now = new Date().getTime();
-                    elapsedSeconds = Math.floor((now - sc.startTime) / 1000);
+                    elapsedSeconds = Math.floor((now - Number(sc.startTime)) / 1000);
                     if (elapsedSeconds < 0) elapsedSeconds = 0;
                 } else {
-                    // Fallback jika startTime kosong, parsing dari liveTime teks
                     let parts = (sc.liveTime || "00:00").split(":");
                     elapsedSeconds = (parseInt(parts[0]) || 0) * 60 + (parseInt(parts[1]) || 0) + 1;
                     sc.startTime = new Date().getTime() - (elapsedSeconds * 1000);
@@ -868,7 +876,8 @@
 
             if (statusSelect) statusSelect.value = "FT";
             scoresData[matchIndex].status = "FT";
-            scoresData[matchIndex].startTime = null;
+            scoresData[matchIndex].startTime = null; // Hapus startTime saat selesai agar tidak mereset jika di-restart nanti
+            scoresData[matchIndex].liveTime = "Full Time";
             
             renderBracket();
             saveMatchScoreAndDetailSilent(matchIndex);
