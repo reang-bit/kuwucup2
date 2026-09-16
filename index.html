@@ -519,7 +519,7 @@
 
         let teams = Array.from({length: 32}, (_, i) => `Tim Peserta ${i + 1}`);
         let targetTab = '';
-        let scoresData = Array.from({length: 31}, () => ({s1: '', s2: '', status: 'UPCOMING', liveTime: '00:00'}));
+        let scoresData = Array.from({length: 31}, () => ({s1: '', s2: '', status: 'UPCOMING', liveTime: '00:00', startTime: null}));
         let matchDetails = {}; 
         let matchTimers = {}; 
 
@@ -564,7 +564,8 @@
                             scoresData[idx].s1 = (sc.s1 !== undefined && sc.s1 !== "") ? sc.s1 : '';
                             scoresData[idx].s2 = (sc.s2 !== undefined && sc.s2 !== "") ? sc.s2 : '';
                             scoresData[idx].status = sc.status || 'UPCOMING';
-                            // Filter format agar jika tersimpan angka timestamp lama di sheet, dikonversi kembali ke 00:00
+                            scoresData[idx].startTime = sc.startTime || null;
+                            
                             let rawTime = sc.liveTime || '00:00';
                             if (rawTime.length > 10 || rawTime.includes('1899')) {
                                 rawTime = '00:00';
@@ -585,7 +586,7 @@
                 
                 scoresData.forEach((sc, idx) => {
                     if (sc.status === 'LIVE' && !matchTimers[idx]) {
-                        resumeBackgroundTimer(idx);
+                        startGlobalLiveTicker(idx);
                     }
                 });
             }
@@ -799,61 +800,56 @@
             renderTopScorers();
         }
 
+        // Fungsi Timer Berbasis Timestamp Realtime Global
         function startMatchTimer(matchIndex) {
-            let timeInput = document.getElementById(`livetime-${matchIndex}`);
             let statusSelect = document.getElementById(`status-${matchIndex}`);
-            
             statusSelect.value = "LIVE";
             scoresData[matchIndex].status = "LIVE";
+            
+            // Simpan waktu patokan mulai (timestamp sekarang) agar perangkat lain tahu detik ke berapa laga berjalan
+            scoresData[matchIndex].startTime = new Date().getTime();
+            scoresData[matchIndex].liveTime = "00:00";
 
-            let currentVal = timeInput ? timeInput.value : scoresData[matchIndex].liveTime;
-            if (!currentVal || currentVal.length > 10 || currentVal.includes('1899')) {
-                currentVal = "00:00";
-            }
-            let parts = currentVal.replace(/[^0-9:]/g, "").split(":");
-            let minutes = parseInt(parts[0]) || 0;
-            let seconds = parseInt(parts[1]) || 0;
+            let timeInput = document.getElementById(`livetime-${matchIndex}`);
+            if(timeInput) timeInput.value = "00:00";
 
             if (matchTimers[matchIndex]) {
                 clearInterval(matchTimers[matchIndex]);
             }
 
-            matchTimers[matchIndex] = setInterval(() => {
-                seconds++;
-                if (seconds >= 60) {
-                    seconds = 0;
-                    minutes++;
-                }
-                let formattedTime = (minutes < 10 ? "0" : "") + minutes + ":" + (seconds < 10 ? "0" : "") + seconds;
-                
-                scoresData[matchIndex].liveTime = formattedTime;
-                if (timeInput) timeInput.value = formattedTime;
+            startGlobalLiveTicker(matchIndex);
+            saveMatchScoreAndDetailSilent(matchIndex); // Sinkronkan ke cloud secara diam-diam
 
-                updateLiveBadgeInBracket(matchIndex, formattedTime);
-            }, 1000);
-
-            alert(`Match ${matchIndex + 1}: Timer waktu & detik mulai berjalan.`);
+            alert(`Match ${matchIndex + 1}: Timer live real-time dimulai.`);
         }
 
-        function resumeBackgroundTimer(matchIndex) {
-            if (matchTimers[matchIndex]) return;
-
-            let currentVal = scoresData[matchIndex].liveTime || "00:00";
-            if (currentVal.length > 10 || currentVal.includes('1899')) {
-                currentVal = "00:00";
-            }
-            let parts = currentVal.replace(/[^0-9:]/g, "").split(":");
-            let minutes = parseInt(parts[0]) || 0;
-            let seconds = parseInt(parts[1]) || 0;
+        function startGlobalLiveTicker(matchIndex) {
+            if (matchTimers[matchIndex]) clearInterval(matchTimers[matchIndex]);
 
             matchTimers[matchIndex] = setInterval(() => {
-                seconds++;
-                if (seconds >= 60) {
-                    seconds = 0;
-                    minutes++;
+                let sc = scoresData[matchIndex];
+                if (!sc || sc.status !== 'LIVE') {
+                    clearInterval(matchTimers[matchIndex]);
+                    return;
                 }
+
+                let elapsedSeconds = 0;
+                if (sc.startTime) {
+                    let now = new Date().getTime();
+                    elapsedSeconds = Math.floor((now - sc.startTime) / 1000);
+                    if (elapsedSeconds < 0) elapsedSeconds = 0;
+                } else {
+                    // Fallback jika startTime kosong, parsing dari liveTime teks
+                    let parts = (sc.liveTime || "00:00").split(":");
+                    elapsedSeconds = (parseInt(parts[0]) || 0) * 60 + (parseInt(parts[1]) || 0) + 1;
+                    sc.startTime = new Date().getTime() - (elapsedSeconds * 1000);
+                }
+
+                let minutes = Math.floor(elapsedSeconds / 60);
+                let seconds = elapsedSeconds % 60;
                 let formattedTime = (minutes < 10 ? "0" : "") + minutes + ":" + (seconds < 10 ? "0" : "") + seconds;
-                scoresData[matchIndex].liveTime = formattedTime;
+
+                sc.liveTime = formattedTime;
 
                 let timeInput = document.getElementById(`livetime-${matchIndex}`);
                 if (timeInput) timeInput.value = formattedTime;
@@ -872,9 +868,27 @@
 
             if (statusSelect) statusSelect.value = "FT";
             scoresData[matchIndex].status = "FT";
+            scoresData[matchIndex].startTime = null;
             
             renderBracket();
-            alert(`Match ${matchIndex + 1}: Pertandingan selesai (FT). Timer dihentikan.`);
+            saveMatchScoreAndDetailSilent(matchIndex);
+            alert(`Match ${matchIndex + 1}: Pertandingan selesai (FT).`);
+        }
+
+        async function saveMatchScoreAndDetailSilent(matchIndex) {
+            scoresData[matchIndex].s1 = document.getElementById(`score-1-${matchIndex}`) ? document.getElementById(`score-1-${matchIndex}`).value : scoresData[matchIndex].s1;
+            scoresData[matchIndex].s2 = document.getElementById(`score-2-${matchIndex}`) ? document.getElementById(`score-2-${matchIndex}`).value : scoresData[matchIndex].s2;
+            scoresData[matchIndex].status = document.getElementById(`status-${matchIndex}`) ? document.getElementById(`status-${matchIndex}`).value : scoresData[matchIndex].status;
+            
+            try {
+                await fetch(WEB_APP_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify({ action: 'saveScores', scores: scoresData })
+                });
+            } catch (err) {
+                console.error("Gagal sinkronisasi background", err);
+            }
         }
 
         function handleStatusChange(matchIndex) {
