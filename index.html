@@ -226,6 +226,7 @@
         }
         .badge-upcoming { color: #666; }
         .badge-live { color: #d9534f; animation: blink 1s infinite; }
+        .badge-ht { color: #f0ad4e; font-weight: bold; }
         .badge-ft { color: #28a745; }
         @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
 
@@ -518,7 +519,7 @@
         <!-- TAB 5: INPUT SKOR & DETAIL -->
         <div id="tab-scores" class="section">
             <h2>Input Skor, Status Live, & Detail Pertandingan</h2>
-            <p>Atur status (Akan Main, LIVE, Selesai/FT), masukkan skor, rincian pencetak gol, serta kartu:</p>
+            <p>Atur status (Akan Main, LIVE, HT, Selesai/FT), masukkan skor, rincian pencetak gol, serta kartu:</p>
             <div id="match-scores-container"></div>
         </div>
 
@@ -827,11 +828,24 @@
             statusSelect.value = "LIVE";
             scoresData[matchIndex].status = "LIVE";
             
-            scoresData[matchIndex].startTime = new Date().getTime();
-            scoresData[matchIndex].liveTime = "00:00";
-
             let timeInput = document.getElementById(`livetime-${matchIndex}`);
-            if(timeInput) timeInput.value = "00:00";
+            let currentInputValue = timeInput ? timeInput.value.trim() : "00:00";
+            
+            // Cek apakah ini lanjut dari Half Time (jika input waktu mengandung angka >= 45 atau status sebelumnya HT)
+            let parts = currentInputValue.split(":");
+            let currentMins = parseInt(parts[0]) || 0;
+            
+            if (currentMins >= 45 || scoresData[matchIndex].status === 'HT') {
+                // Babak kedua dimulai dari menit ke-45
+                scoresData[matchIndex].startTime = new Date().getTime() - (45 * 60 * 1000);
+                scoresData[matchIndex].liveTime = "45:00";
+                if(timeInput) timeInput.value = "45:00";
+            } else {
+                // Babak pertama dimulai dari 00:00
+                scoresData[matchIndex].startTime = new Date().getTime();
+                scoresData[matchIndex].liveTime = "00:00";
+                if(timeInput) timeInput.value = "00:00";
+            }
 
             if (matchTimers[matchIndex]) {
                 clearInterval(matchTimers[matchIndex]);
@@ -841,6 +855,28 @@
             saveMatchScoreAndDetailSilent(matchIndex);
 
             alert(`Match ${matchIndex + 1}: Timer live real-time dimulai.`);
+        }
+
+        function pauseMatchTimer(matchIndex) {
+            let statusSelect = document.getElementById(`status-${matchIndex}`);
+            
+            if (matchTimers[matchIndex]) {
+                clearInterval(matchTimers[matchIndex]);
+                delete matchTimers[matchIndex];
+            }
+
+            if (statusSelect) statusSelect.value = "HT";
+            scoresData[matchIndex].status = "HT";
+            scoresData[matchIndex].startTime = null; 
+            
+            let timeInput = document.getElementById(`livetime-${matchIndex}`);
+            if (timeInput) {
+                scoresData[matchIndex].liveTime = timeInput.value;
+            }
+            
+            renderBracket();
+            saveMatchScoreAndDetailSilent(matchIndex);
+            alert(`Match ${matchIndex + 1}: Pertandingan dijeda (Half Time).`);
         }
 
         function startGlobalLiveTicker(matchIndex) {
@@ -1051,6 +1087,8 @@
                 let statusBadge = `<span class="badge-upcoming">⏰ Belum Main</span>`;
                 if (scoreState.status === 'LIVE') {
                     statusBadge = `<span class="badge-live match-badge-${mIdx}">● LIVE ${displayTime}</span>`;
+                } else if (scoreState.status === 'HT') {
+                    statusBadge = `<span class="badge-ht">⏸ HT (${displayTime})</span>`;
                 } else if (scoreState.status === 'FT') {
                     statusBadge = `<span class="badge-ft">✓ FT (Selesai)</span>`;
                 }
@@ -1090,6 +1128,8 @@
             let statusBadge = `<span style="color:#666;">⏰ Belum Main</span>`;
             if (scoreState.status === 'LIVE') {
                 statusBadge = `<span class="badge-live match-badge-${mIdx}">● LIVE ${displayTime}</span>`;
+            } else if (scoreState.status === 'HT') {
+                statusBadge = `<span class="badge-ht">⏸ HT (${displayTime})</span>`;
             } else if (scoreState.status === 'FT') {
                 statusBadge = `<span class="badge-ft">✓ FT (Selesai)</span>`;
             }
@@ -1179,17 +1219,18 @@
                             <div>
                                 <label style="font-weight:bold; font-size:12px; display:block;">Status Laga:</label>
                                 <select id="status-${i}" class="schedule-input" style="width:130px;" onchange="handleStatusChange(${i})">
-    <option value="UPCOMING" ${scoreState.status === 'UPCOMING' ? 'selected' : ''}>⏰ Belum Main</option>
-    <option value="LIVE" ${scoreState.status === 'LIVE' ? 'selected' : ''}>● LIVE (Berjalan)</option>
-    <option value="HT" ${scoreState.status === 'HT' ? 'selected' : ''}>⏸ HT (Half Time)</option>
-    <option value="FT" ${scoreState.status === 'FT' ? 'selected' : ''}>✓ FT (Selesai)</option>
-</select>
+                                    <option value="UPCOMING" ${scoreState.status === 'UPCOMING' ? 'selected' : ''}>⏰ Belum Main</option>
+                                    <option value="LIVE" ${scoreState.status === 'LIVE' ? 'selected' : ''}>● LIVE (Berjalan)</option>
+                                    <option value="HT" ${scoreState.status === 'HT' ? 'selected' : ''}>⏸ HT (Half Time)</option>
+                                    <option value="FT" ${scoreState.status === 'FT' ? 'selected' : ''}>✓ FT (Selesai)</option>
+                                </select>
                             </div>
                             <div>
                                 <label style="font-weight:bold; font-size:12px; display:block;">Waktu (MM:SS):</label>
                                 <div style="display:flex; align-items:center; gap:5px;">
                                     <input type="text" id="livetime-${i}" class="schedule-input" style="width:85px; text-align:center;" value="${cleanLiveTime}" placeholder="00:00">
                                     <button type="button" onclick="startMatchTimer(${i})" style="background:#28a745; color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer; font-size:11px; font-weight:bold;">▶ Mulai</button>
+                                    <button type="button" onclick="pauseMatchTimer(${i})" style="background:#f0ad4e; color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer; font-size:11px; font-weight:bold;">⏸ Pause</button>
                                     <button type="button" onclick="stopMatchTimer(${i})" style="background:#d9534f; color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer; font-size:11px; font-weight:bold;">⏹ Selesai</button>
                                 </div>
                             </div>
@@ -1208,7 +1249,7 @@
                                 <strong style="font-size: 12px; color: var(--primary-color);">Tim 1: ${t1}</strong>
                                 <div style="margin-top:5px;">
                                     <label style="font-size:11px;">Pencetak Gol & Menit:</label>
-                                    <input type="text" id="t1-scorers-${i}" class="schedule-input" value="${detail.t1Scorers || ''}" placeholder="Cth: Budi 15', 42'">
+                                    <input type="text" id="t1-scorers-${i}" class="schedule-input" value="${detail.t1Scorers || ''}" placeholder="Cth: Budi 15', 48'">
                                 </div>
                                 <div style="margin-top:5px;">
                                     <label style="font-size:11px;">Kartu (Kuning/Merah):</label>
