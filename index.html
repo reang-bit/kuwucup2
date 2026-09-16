@@ -519,7 +519,7 @@
 
         let teams = Array.from({length: 32}, (_, i) => `Tim Peserta ${i + 1}`);
         let targetTab = '';
-        let scoresData = Array.from({length: 31}, () => ({s1: '', s2: '', status: 'UPCOMING', liveTime: '01:00'}));
+        let scoresData = Array.from({length: 31}, () => ({s1: '', s2: '', status: 'UPCOMING', liveTime: '00:00'}));
         let matchDetails = {}; 
         let matchTimers = {}; 
 
@@ -564,7 +564,12 @@
                             scoresData[idx].s1 = (sc.s1 !== undefined && sc.s1 !== "") ? sc.s1 : '';
                             scoresData[idx].s2 = (sc.s2 !== undefined && sc.s2 !== "") ? sc.s2 : '';
                             scoresData[idx].status = sc.status || 'UPCOMING';
-                            scoresData[idx].liveTime = sc.liveTime || '01:00';
+                            // Filter format agar jika tersimpan angka timestamp lama di sheet, dikonversi kembali ke 00:00
+                            let rawTime = sc.liveTime || '00:00';
+                            if (rawTime.length > 10 || rawTime.includes('1899')) {
+                                rawTime = '00:00';
+                            }
+                            scoresData[idx].liveTime = rawTime;
                         }
                     });
                 }
@@ -802,7 +807,10 @@
             scoresData[matchIndex].status = "LIVE";
 
             let currentVal = timeInput ? timeInput.value : scoresData[matchIndex].liveTime;
-            let parts = currentVal ? currentVal.replace(/[^0-9:]/g, "").split(":") : ["1", "00"];
+            if (!currentVal || currentVal.length > 10 || currentVal.includes('1899')) {
+                currentVal = "00:00";
+            }
+            let parts = currentVal.replace(/[^0-9:]/g, "").split(":");
             let minutes = parseInt(parts[0]) || 0;
             let seconds = parseInt(parts[1]) || 0;
 
@@ -816,7 +824,7 @@
                     seconds = 0;
                     minutes++;
                 }
-                let formattedTime = minutes + ":" + (seconds < 10 ? "0" : "") + seconds;
+                let formattedTime = (minutes < 10 ? "0" : "") + minutes + ":" + (seconds < 10 ? "0" : "") + seconds;
                 
                 scoresData[matchIndex].liveTime = formattedTime;
                 if (timeInput) timeInput.value = formattedTime;
@@ -830,7 +838,10 @@
         function resumeBackgroundTimer(matchIndex) {
             if (matchTimers[matchIndex]) return;
 
-            let currentVal = scoresData[matchIndex].liveTime || "01:00";
+            let currentVal = scoresData[matchIndex].liveTime || "00:00";
+            if (currentVal.length > 10 || currentVal.includes('1899')) {
+                currentVal = "00:00";
+            }
             let parts = currentVal.replace(/[^0-9:]/g, "").split(":");
             let minutes = parseInt(parts[0]) || 0;
             let seconds = parseInt(parts[1]) || 0;
@@ -841,7 +852,7 @@
                     seconds = 0;
                     minutes++;
                 }
-                let formattedTime = minutes + ":" + (seconds < 10 ? "0" : "") + seconds;
+                let formattedTime = (minutes < 10 ? "0" : "") + minutes + ":" + (seconds < 10 ? "0" : "") + seconds;
                 scoresData[matchIndex].liveTime = formattedTime;
 
                 let timeInput = document.getElementById(`livetime-${matchIndex}`);
@@ -998,14 +1009,17 @@
                 let mIdx = startMatchIdx + i;
                 let t1 = getTeamNameForMatch(mIdx, 1);
                 let t2 = getTeamNameForMatch(mIdx, 2);
-                let scoreState = scoresData[mIdx] || { s1: '', s2: '', status: 'UPCOMING', liveTime: '01:00' };
+                let scoreState = scoresData[mIdx] || { s1: '', s2: '', status: 'UPCOMING', liveTime: '00:00' };
                 
                 let score1 = scoreState.s1 !== '' ? scoreState.s1 : '-';
                 let score2 = scoreState.s2 !== '' ? scoreState.s2 : '-';
 
+                let displayTime = scoreState.liveTime || '00:00';
+                if (displayTime.length > 10 || displayTime.includes('1899')) displayTime = '00:00';
+
                 let statusBadge = `<span class="badge-upcoming">⏰ Belum Main</span>`;
                 if (scoreState.status === 'LIVE') {
-                    statusBadge = `<span class="badge-live match-badge-${mIdx}">● LIVE ${scoreState.liveTime || '01:00'}</span>`;
+                    statusBadge = `<span class="badge-live match-badge-${mIdx}">● LIVE ${displayTime}</span>`;
                 } else if (scoreState.status === 'FT') {
                     statusBadge = `<span class="badge-ft">✓ FT (Selesai)</span>`;
                 }
@@ -1031,15 +1045,18 @@
         }
 
         function generateCenterCard(mIdx, title, timeStr, isFinal = false) {
-            let scoreState = scoresData[mIdx] || { s1: '', s2: '', status: 'UPCOMING', liveTime: '01:00' };
+            let scoreState = scoresData[mIdx] || { s1: '', s2: '', status: 'UPCOMING', liveTime: '00:00' };
             let t1 = getTeamNameForMatch(mIdx, 1);
             let t2 = getTeamNameForMatch(mIdx, 2);
             let score1 = scoreState.s1 !== '' ? scoreState.s1 : '-';
             let score2 = scoreState.s2 !== '' ? scoreState.s2 : '-';
 
+            let displayTime = scoreState.liveTime || '00:00';
+            if (displayTime.length > 10 || displayTime.includes('1899')) displayTime = '00:00';
+
             let statusBadge = `<span style="color:#666;">⏰ Belum Main</span>`;
             if (scoreState.status === 'LIVE') {
-                statusBadge = `<span class="badge-live match-badge-${mIdx}">● LIVE ${scoreState.liveTime || '01:00'}</span>`;
+                statusBadge = `<span class="badge-live match-badge-${mIdx}">● LIVE ${displayTime}</span>`;
             } else if (scoreState.status === 'FT') {
                 statusBadge = `<span class="badge-ft">✓ FT (Selesai)</span>`;
             }
@@ -1114,7 +1131,10 @@
                 let t1 = getTeamNameForMatch(i, 1);
                 let t2 = getTeamNameForMatch(i, 2);
                 let detail = matchDetails[i] || {};
-                let scoreState = scoresData[i] || { s1: '', s2: '', status: 'UPCOMING', liveTime: '01:00' };
+                let scoreState = scoresData[i] || { s1: '', s2: '', status: 'UPCOMING', liveTime: '00:00' };
+
+                let cleanLiveTime = scoreState.liveTime || '00:00';
+                if (cleanLiveTime.length > 10 || cleanLiveTime.includes('1899')) cleanLiveTime = '00:00';
 
                 container.innerHTML += `
                     <div style="background:#f9f9f9; padding:15px; margin-bottom:15px; border-radius:8px; border:1px solid #ddd; color:#333;" id="match-block-${i}">
@@ -1134,7 +1154,7 @@
                             <div>
                                 <label style="font-weight:bold; font-size:12px; display:block;">Waktu (MM:SS):</label>
                                 <div style="display:flex; align-items:center; gap:5px;">
-                                    <input type="text" id="livetime-${i}" class="schedule-input" style="width:85px; text-align:center;" value="${scoreState.liveTime || '01:00'}" placeholder="00:00">
+                                    <input type="text" id="livetime-${i}" class="schedule-input" style="width:85px; text-align:center;" value="${cleanLiveTime}" placeholder="00:00">
                                     <button type="button" onclick="startMatchTimer(${i})" style="background:#28a745; color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer; font-size:11px; font-weight:bold;">▶ Mulai</button>
                                     <button type="button" onclick="stopMatchTimer(${i})" style="background:#d9534f; color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer; font-size:11px; font-weight:bold;">⏹ Selesai</button>
                                 </div>
