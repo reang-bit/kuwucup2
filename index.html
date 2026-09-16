@@ -1179,10 +1179,11 @@
                             <div>
                                 <label style="font-weight:bold; font-size:12px; display:block;">Status Laga:</label>
                                 <select id="status-${i}" class="schedule-input" style="width:130px;" onchange="handleStatusChange(${i})">
-                                    <option value="UPCOMING" ${scoreState.status === 'UPCOMING' ? 'selected' : ''}>⏰ Belum Main</option>
-                                    <option value="LIVE" ${scoreState.status === 'LIVE' ? 'selected' : ''}>● LIVE (Berjalan)</option>
-                                    <option value="FT" ${scoreState.status === 'FT' ? 'selected' : ''}>✓ FT (Selesai)</option>
-                                </select>
+    <option value="UPCOMING" ${scoreState.status === 'UPCOMING' ? 'selected' : ''}>⏰ Belum Main</option>
+    <option value="LIVE" ${scoreState.status === 'LIVE' ? 'selected' : ''}>● LIVE (Berjalan)</option>
+    <option value="HT" ${scoreState.status === 'HT' ? 'selected' : ''}>⏸ HT (Half Time)</option>
+    <option value="FT" ${scoreState.status === 'FT' ? 'selected' : ''}>✓ FT (Selesai)</option>
+</select>
                             </div>
                             <div>
                                 <label style="font-weight:bold; font-size:12px; display:block;">Waktu (MM:SS):</label>
