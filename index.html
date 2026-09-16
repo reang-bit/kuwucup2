@@ -203,13 +203,26 @@
         }
         .match-status-badge {
             font-size: 9px;
-            margin-bottom: 3px;
+            margin-bottom: 2px;
             text-align: center;
             font-weight: bold;
             display: flex;
             justify-content: space-between;
             align-items: center;
             padding: 0 2px;
+        }
+        .match-time-sub {
+            font-size: 8.5px;
+            color: #555;
+            background: #f1f5f9;
+            padding: 2px 4px;
+            border-radius: 3px;
+            margin-bottom: 4px;
+            text-align: center;
+            border: 1px solid #e2e8f0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
         .badge-upcoming { color: #666; }
         .badge-live { color: #d9534f; animation: blink 1s infinite; }
@@ -566,7 +579,6 @@
                             scoresData[idx].status = sc.status || 'UPCOMING';
                             scoresData[idx].startTime = sc.startTime ? Number(sc.startTime) : null;
                             
-                            // Jika status LIVE dan ada startTime, hitung ulang waktu berjalan secara akurat berdasarkan selisih waktu saat ini
                             if (scoresData[idx].status === 'LIVE' && scoresData[idx].startTime) {
                                 let now = new Date().getTime();
                                 let elapsedSec = Math.floor((now - scoresData[idx].startTime) / 1000);
@@ -815,7 +827,6 @@
             statusSelect.value = "LIVE";
             scoresData[matchIndex].status = "LIVE";
             
-            // Set timestamp mulai baru
             scoresData[matchIndex].startTime = new Date().getTime();
             scoresData[matchIndex].liveTime = "00:00";
 
@@ -876,7 +887,7 @@
 
             if (statusSelect) statusSelect.value = "FT";
             scoresData[matchIndex].status = "FT";
-            scoresData[matchIndex].startTime = null; // Hapus startTime saat selesai agar tidak mereset jika di-restart nanti
+            scoresData[matchIndex].startTime = null; 
             scoresData[matchIndex].liveTime = "Full Time";
             
             renderBracket();
@@ -990,19 +1001,15 @@
                 </div>
             `;
 
-            let sf1Time = matchSchedules[28].datetime;
-            let sf2Time = matchSchedules[29].datetime;
-            let finTime = matchSchedules[30].datetime;
-
             let centerHTML = `
                 <div class="center-stage">
                     <div style="font-size:11px; font-weight:bold; color:var(--accent-color);"> KUWU CUP 2</div>
                     <div class="trophy-box">🏆</div>
                     <h3>BAGAN UTAMA</h3>
                     
-                    ${generateCenterCard(28, "SEMIFINAL (I)", sf1Time)}
-                    ${generateCenterCard(29, "SEMIFINAL (II)", sf2Time)}
-                    ${generateCenterCard(30, "FINAL KUWU CUP 2", finTime, true)}
+                    ${generateCenterCard(28, "SEMIFINAL (I)")}
+                    ${generateCenterCard(29, "SEMIFINAL (II)")}
+                    ${generateCenterCard(30, "FINAL KUWU CUP 2", true)}
                 </div>
             `;
 
@@ -1033,6 +1040,7 @@
                 let t1 = getTeamNameForMatch(mIdx, 1);
                 let t2 = getTeamNameForMatch(mIdx, 2);
                 let scoreState = scoresData[mIdx] || { s1: '', s2: '', status: 'UPCOMING', liveTime: '00:00' };
+                let matchSch = matchSchedules[mIdx] || { datetime: 'Jadwal belum diatur' };
                 
                 let score1 = scoreState.s1 !== '' ? scoreState.s1 : '-';
                 let score2 = scoreState.s2 !== '' ? scoreState.s2 : '-';
@@ -1053,6 +1061,7 @@
                             <span>M-${mIdx+1}</span>
                             ${statusBadge}
                         </div>
+                        <div class="match-time-sub" title="${matchSch.datetime}">📅 ${matchSch.datetime}</div>
                         <div class="team-row">
                             <span>${t1}</span>
                             <span class="team-score">${score1}</span>
@@ -1067,8 +1076,9 @@
             return html;
         }
 
-        function generateCenterCard(mIdx, title, timeStr, isFinal = false) {
+        function generateCenterCard(mIdx, title, isFinal = false) {
             let scoreState = scoresData[mIdx] || { s1: '', s2: '', status: 'UPCOMING', liveTime: '00:00' };
+            let matchSch = matchSchedules[mIdx] || { datetime: 'Jadwal belum diatur' };
             let t1 = getTeamNameForMatch(mIdx, 1);
             let t2 = getTeamNameForMatch(mIdx, 2);
             let score1 = scoreState.s1 !== '' ? scoreState.s1 : '-';
@@ -1089,10 +1099,10 @@
             return `
                 <div class="match-card" onclick="showMatchDetail(${mIdx})" style="width:100%; ${bgStyle} margin-bottom:8px; text-align:left;">
                     <div style="display:flex; justify-content:space-between; font-size:9px; font-weight:bold;">
-                        <span>${title}</span>
+                        <span>${title} (M-${mIdx+1})</span>
                         ${statusBadge}
                     </div>
-                    <div style="font-size:9px; opacity:0.8; margin:2px 0;">${timeStr}</div>
+                    <div class="match-time-sub" style="background:${isFinal ? '#e6c555' : '#f1f5f9'}; color:${isFinal ? '#111' : '#555'}; border:none;" title="${matchSch.datetime}">📅 ${matchSch.datetime}</div>
                     <div style="font-weight:bold; font-size:11px;">${t1} <span style="float:right;">${score1} - ${score2}</span></div>
                     <div style="font-weight:bold; font-size:11px;">${t2}</div>
                 </div>
