@@ -48,7 +48,7 @@
         .nav-tabs {
             display: flex;
             justify-content: center;
-            gap: 15px;
+            gap: 12px;
             margin-bottom: 20px;
             flex-wrap: wrap;
         }
@@ -56,8 +56,8 @@
             background-color: #ffffff;
             border: 2px solid var(--accent-color);
             color: var(--primary-color);
-            padding: 10px 22px;
-            font-size: 15px;
+            padding: 10px 18px;
+            font-size: 14px;
             font-weight: bold;
             border-radius: 30px;
             cursor: pointer;
@@ -287,23 +287,24 @@
         .btn-action:hover {
             background-color: #c19b2e;
         }
-        /* Schedule Table */
-        table.schedule-table {
+        /* Tables */
+        table.schedule-table, table.topscorer-table {
             width: 100%;
             border-collapse: collapse;
             margin-top: 15px;
         }
-        table.schedule-table th, table.schedule-table td {
+        table.schedule-table th, table.schedule-table td, 
+        table.topscorer-table th, table.topscorer-table td {
             border: 1px solid #ddd;
             padding: 10px 12px;
             text-align: left;
             font-size: 13px;
         }
-        table.schedule-table th {
+        table.schedule-table th, table.topscorer-table th {
             background-color: var(--primary-color);
             color: white;
         }
-        table.schedule-table tr:nth-child(even) {
+        table.schedule-table tr:nth-child(even), table.topscorer-table tr:nth-child(even) {
             background-color: #fcfcfc;
         }
         .schedule-input {
@@ -338,12 +339,6 @@
             border-radius: 4px;
             font-size: 11px;
             cursor: pointer;
-        }
-        .detail-split-box {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-top: 5px;
         }
         footer {
             background-color: #0a1f18;
@@ -429,8 +424,9 @@
     <div class="container">
         <div class="nav-tabs">
             <button class="nav-btn active" onclick="switchTab('bracket')">Bagan Turnamen (Publik)</button>
+            <button class="nav-btn" onclick="switchTab('topscorer')">⚽ Top Scorer</button>
             <button class="nav-btn" onclick="requestAdminTab('teams')">1. Input Nama Team (Admin)</button>
-            <button class="nav-btn" onclick="requestAdminTab('schedule')">2. Pengaturan Jadwal & Waktu (Admin)</button>
+            <button class="nav-btn" onclick="requestAdminTab('schedule')">2. Pengaturan Jadwal (Admin)</button>
             <button class="nav-btn" onclick="requestAdminTab('scores')">3. Input Skor & Detail (Admin)</button>
         </div>
 
@@ -447,7 +443,28 @@
             </div>
         </div>
 
-        <!-- TAB 2: INPUT NAMA TEAM -->
+        <!-- TAB 2: TOP SCORER -->
+        <div id="tab-topscorer" class="section">
+            <h2>Daftar Pencetak Gol Terbanyak (Top Scorer)</h2>
+            <p>Akumulasi gol seluruh pemain dari semua pertandingan yang telah dimainkan:</p>
+            <div style="overflow-x: auto;">
+                <table class="topscorer-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 50px; text-align:center;">No</th>
+                            <th>Nama Pemain</th>
+                            <th>Tim / Klub</th>
+                            <th style="width: 100px; text-align:center;">Jumlah Gol (⚽)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="topscorer-tbody">
+                        <tr><td colspan="4" style="text-align: center;">Belum ada data gol yang tercatat.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- TAB 3: INPUT NAMA TEAM -->
         <div id="tab-teams" class="section">
             <h2>Input 32 Nama Tim Peserta (16 Kiri, 16 Kanan)</h2>
             <p>Masukkan nama 32 tim yang bertanding di Kuwu Cup 2 2026:</p>
@@ -455,7 +472,7 @@
             <button class="btn-action" onclick="saveTeams()">Simpan Daftar Tim & Perbarui Bagan</button>
         </div>
 
-        <!-- TAB 3: JADWAL PERTANDINGAN -->
+        <!-- TAB 4: JADWAL PERTANDINGAN -->
         <div id="tab-schedule" class="section">
             <h2>Pengaturan Jadwal, Hari, Tanggal, & Jam Pertandingan</h2>
             <p>Admin dapat mengubah tanggal, hari, jam, dan keterangan pertandingan di bawah ini:</p>
@@ -477,7 +494,7 @@
             <button class="btn-action" onclick="saveScheduleSettings()">Simpan Perubahan Jadwal</button>
         </div>
 
-        <!-- TAB 4: INPUT SKOR & DETAIL -->
+        <!-- TAB 5: INPUT SKOR & DETAIL -->
         <div id="tab-scores" class="section">
             <h2>Input Skor & Detail Pertandingan per Tim</h2>
             <p>Masukkan skor dan rincian pencetak gol serta kartu secara terpisah untuk Tim 1 dan Tim 2:</p>
@@ -548,6 +565,7 @@
             } finally {
                 document.getElementById('loading-overlay').style.display = 'none';
                 renderBracket();
+                renderTopScorers();
             }
         }
         
@@ -627,21 +645,27 @@
             document.querySelectorAll('.section').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
 
+            // Match tab buttons based on function argument
+            const buttons = document.querySelectorAll('.nav-btn');
             if (tabId === 'bracket') {
                 document.getElementById('tab-bracket').classList.add('active');
-                document.querySelectorAll('.nav-btn')[0].classList.add('active');
+                buttons[0].classList.add('active');
                 renderBracket();
+            } else if (tabId === 'topscorer') {
+                document.getElementById('tab-topscorer').classList.add('active');
+                buttons[1].classList.add('active');
+                renderTopScorers();
             } else if (tabId === 'teams') {
                 document.getElementById('tab-teams').classList.add('active');
-                document.querySelectorAll('.nav-btn')[1].classList.add('active');
+                buttons[2].classList.add('active');
                 initTeamInputs();
             } else if (tabId === 'schedule') {
                 document.getElementById('tab-schedule').classList.add('active');
-                document.querySelectorAll('.nav-btn')[2].classList.add('active');
+                buttons[3].classList.add('active');
                 renderSchedule();
             } else if (tabId === 'scores') {
                 document.getElementById('tab-scores').classList.add('active');
-                document.querySelectorAll('.nav-btn')[3].classList.add('active');
+                buttons[4].classList.add('active');
                 renderScoresInput();
             }
         }
@@ -749,6 +773,82 @@
 
             document.getElementById('loading-overlay').style.display = 'none';
             renderBracket();
+            renderTopScorers();
+        }
+
+        // Fungsi Kalkulator & Render Top Scorer Otomatis
+        function renderTopScorers() {
+            let scorerMap = {}; // Format: { "Nama Pemain (Tim)": count }
+
+            for (let i = 0; i < 31; i++) {
+                let detail = matchDetails[i];
+                if (!detail) continue;
+
+                let t1Name = getTeamNameForMatch(i, 1);
+                let t2Name = getTeamNameForMatch(i, 2);
+
+                // Proses Pencetak Gol Tim 1
+                if (detail.t1Scorers) {
+                    parseAndAddGoals(detail.t1Scorers, t1Name, scorerMap);
+                }
+                // Proses Pencetak Gol Tim 2
+                if (detail.t2Scorers) {
+                    parseAndAddGoals(detail.t2Scorers, t2Name, scorerMap);
+                }
+            }
+
+            // Ubah object ke array untuk di-sorting berdasarkan jumlah gol terbanyak
+            let scorerList = Object.keys(scorerMap).map(key => {
+                return { name: key.split(" (Team:")[0], team: key.split(" (Team:")[1].replace(")", ""), goals: scorerMap[key] };
+            });
+
+            scorerList.sort((a, b) => b.goals - a.goals);
+
+            const tbody = document.getElementById('topscorer-tbody');
+            tbody.innerHTML = '';
+
+            if (scorerList.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color:#777;">Belum ada data gol yang tercatat.</td></tr>`;
+                return;
+            }
+
+            scorerList.forEach((item, index) => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td style="text-align:center; font-weight:bold;">${index + 1}</td>
+                        <td><strong>${item.name}</strong></td>
+                        <td>${item.team}</td>
+                        <td style="text-align:center; font-weight:bold; color:var(--primary-color);">${item.goals} ⚽</td>
+                    </tr>
+                `;
+            });
+        }
+
+        // Helper untuk memparsing teks input pencetak gol (contoh: "Budi 15', Andi (pen) 30', Budi")
+        function parseAndAddGoals(rawText, teamName, map) {
+            // Pisahkan berdasarkan koma atau baris baru
+            let entries = rawText.split(/,|\n/);
+            entries.forEach(entry => {
+                let cleanName = entry.trim();
+                if (!cleanName) return;
+
+                // Hilangkan keterangan menit atau penalti di dalam kurung/angka belakang (misal: "Budi 15'" jadi "Budi")
+                // Mengambil string sebelum angka penunjuk menit atau tanda kurung waktu
+                cleanName = cleanName.replace(/\d+['"]?/g, '').replace(/\(.*?\)/g, '').trim();
+                
+                // Jika setelah dibersihkan nama tidak kosong
+                if (cleanName.length > 0) {
+                    // Buat key unik gabungan nama dan tim agar pemain beda tim dengan nama sama terpisah
+                    let mapKey = `${cleanName} (Team:${teamName})`;
+                    
+                    // Hitung berapa kali nama tersebut muncul (bisa jadi dalam 1 input ditulis berulang atau mencetak lebih dari 1 gol)
+                    // Atau kita asumsikan 1 baris/entry bernilai 1 gol, atau cek jika user mengetik "Budi (2 gol)"
+                    let countMatch = entry.match(/\((\d+)\s*gol\)/i);
+                    let addCount = countMatch ? parseInt(countMatch[1]) : 1;
+
+                    map[mapKey] = (map[mapKey] || 0) + addCount;
+                }
+            });
         }
 
         function renderBracket() {
