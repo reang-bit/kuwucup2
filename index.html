@@ -488,10 +488,10 @@
     </header>
 
     <div class="container">
-        <!-- Navigasi Menu Ditambahkan Menu Daftar Team -->
+        <!-- Navigasi Menu -->
         <div class="nav-tabs">
             <button class="nav-btn active" onclick="switchTab('bracket')">Bagan Turnamen</button>
-            <button class="nav-btn" onclick="switchTab('teams-list')">shield Daftar Team</button>
+            <button class="nav-btn" onclick="switchTab('teams-list')">📋 Daftar Team</button>
             <button class="nav-btn" onclick="switchTab('topscorer')">⚽ Top Scorer</button>
             <button class="nav-btn" onclick="requestAdminTab('teams')">1. Input Nama Team (Admin)</button>
             <button class="nav-btn" onclick="requestAdminTab('schedule')">2. Pengaturan Jadwal (Admin)</button>
@@ -595,7 +595,7 @@
         <!-- TAB 5: INPUT SKOR & DETAIL -->
         <div id="tab-scores" class="section">
             <h2>Input Skor, Status Live, & Detail Pertandingan</h2>
-            <p>Atur status (Akan Main, LIVE, HT, Selesai/FT), masukkan skor, rincian pencetak gol, serta kartu:</p>
+            <p>Atur status (Akan Main, LIVE, HT, Selesai/FT), masukkan skor, pilih pencetak gol serta kartu dari skuad tim:</p>
             <div id="match-scores-container"></div>
         </div>
 
@@ -768,7 +768,6 @@
             if (event.key === 'Enter') verifyPassword();
         }
 
-        // Render Menu Daftar Tim Publik & Aksi Detail Team
         function renderPublicTeamsList() {
             const container = document.getElementById('public-teams-grid');
             container.innerHTML = '';
@@ -783,7 +782,6 @@
             });
         }
 
-        // Menampilkan Modal Detail Skuad Tim
         function showTeamDetailModal(teamName) {
             document.getElementById('modal-team-title').innerText = `Tim: ${teamName}`;
             const listEl = document.getElementById('modal-team-players-list');
@@ -841,7 +839,6 @@
             document.getElementById('loading-overlay').style.display = 'none';
         }
 
-        // Navigasi Tab
         function switchTab(tabId) {
             document.querySelectorAll('.section').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
@@ -949,17 +946,103 @@
             document.getElementById('detail-modal').style.display = 'flex';
         }
 
+        // Helper untuk tambah baris pencetak gol dinamis dari dropdown pemain
+        function addGoalRow(matchIdx, teamSlot, playerName = '', minute = '') {
+            const container = document.getElementById(`t${teamSlot}-scorers-list-${matchIdx}`);
+            let tName = getTeamNameForMatch(matchIdx, teamSlot);
+            let players = teamPlayers[tName] || [];
+
+            let optionsHtml = `<option value="">-- Pilih Pemain --</option>`;
+            players.forEach(p => {
+                let sel = (p === playerName) ? 'selected' : '';
+                optionsHtml += `<option value="${p}" ${sel}>${p}</option>`;
+            });
+
+            let rowDiv = document.createElement('div');
+            rowDiv.style.cssText = "display: flex; gap: 5px; margin-bottom: 5px; align-items: center;";
+            rowDiv.innerHTML = `
+                <select class="schedule-input scorer-player-sel" style="flex:2;">
+                    ${optionsHtml}
+                </select>
+                <input type="text" class="schedule-input scorer-min-inp" style="flex:1;" placeholder="Menit (cth: 15')" value="${minute}">
+                <button type="button" onclick="this.parentElement.remove()" style="background:#d9534f; color:white; border:none; border-radius:3px; padding:4px 8px; cursor:pointer; font-size:11px;">✕</button>
+            `;
+            container.appendChild(rowDiv);
+        }
+
+        // Helper untuk tambah baris kartu dinamis dari dropdown pemain
+        function addCardRow(matchIdx, teamSlot, playerName = '', cardType = 'Kuning', minute = '') {
+            const container = document.getElementById(`t${teamSlot}-cards-list-${matchIdx}`);
+            let tName = getTeamNameForMatch(matchIdx, teamSlot);
+            let players = teamPlayers[tName] || [];
+
+            let optionsHtml = `<option value="">-- Pilih Pemain --</option>`;
+            players.forEach(p => {
+                let sel = (p === playerName) ? 'selected' : '';
+                optionsHtml += `<option value="${p}" ${sel}>${p}</option>`;
+            });
+
+            let rowDiv = document.createElement('div');
+            rowDiv.style.cssText = "display: flex; gap: 5px; margin-bottom: 5px; align-items: center;";
+            rowDiv.innerHTML = `
+                <select class="schedule-input card-player-sel" style="flex:2;">
+                    ${optionsHtml}
+                </select>
+                <select class="schedule-input card-type-sel" style="flex:1;">
+                    <option value="🟨 Kuning" ${cardType.includes('Kuning') ? 'selected' : ''}>🟨 Kuning</option>
+                    <option value="🟥 Merah" ${cardType.includes('Merah') ? 'selected' : ''}>🟥 Merah</option>
+                </select>
+                <input type="text" class="schedule-input card-min-inp" style="flex:1;" placeholder="Menit" value="${minute}">
+                <button type="button" onclick="this.parentElement.remove()" style="background:#d9534f; color:white; border:none; border-radius:3px; padding:4px 8px; cursor:pointer; font-size:11px;">✕</button>
+            `;
+            container.appendChild(rowDiv);
+        }
+
         async function saveMatchScoreAndDetail(matchIndex) {
             scoresData[matchIndex].s1 = document.getElementById(`score-1-${matchIndex}`).value;
             scoresData[matchIndex].s2 = document.getElementById(`score-2-${matchIndex}`).value;
             scoresData[matchIndex].status = document.getElementById(`status-${matchIndex}`).value;
             scoresData[matchIndex].liveTime = document.getElementById(`livetime-${matchIndex}`).value;
 
+            // Kumpulkan data gol Tim 1 dari baris dinamis
+            let t1ScorersArr = [];
+            document.querySelectorAll(`#t1-scorers-list-${matchIndex} > div`).forEach(row => {
+                let p = row.querySelector('.scorer-player-sel').value;
+                let m = row.querySelector('.scorer-min-inp').value.trim();
+                if(p) t1ScorersArr.push(m ? `${p} (${m})` : p);
+            });
+
+            // Kumpulkan data kartu Tim 1
+            let t1CardsArr = [];
+            document.querySelectorAll(`#t1-cards-list-${matchIndex} > div`).forEach(row => {
+                let p = row.querySelector('.card-player-sel').value;
+                let c = row.querySelector('.card-type-sel').value;
+                let m = row.querySelector('.card-min-inp').value.trim();
+                if(p) t1CardsArr.push(m ? `${p} - ${c} (${m})` : `${p} - ${c}`);
+            });
+
+            // Kumpulkan data gol Tim 2
+            let t2ScorersArr = [];
+            document.querySelectorAll(`#t2-scorers-list-${matchIndex} > div`).forEach(row => {
+                let p = row.querySelector('.scorer-player-sel').value;
+                let m = row.querySelector('.scorer-min-inp').value.trim();
+                if(p) t2ScorersArr.push(m ? `${p} (${m})` : p);
+            });
+
+            // Kumpulkan data kartu Tim 2
+            let t2CardsArr = [];
+            document.querySelectorAll(`#t2-cards-list-${matchIndex} > div`).forEach(row => {
+                let p = row.querySelector('.card-player-sel').value;
+                let c = row.querySelector('.card-type-sel').value;
+                let m = row.querySelector('.card-min-inp').value.trim();
+                if(p) t2CardsArr.push(m ? `${p} - ${c} (${m})` : `${p} - ${c}`);
+            });
+
             if (!matchDetails[matchIndex]) matchDetails[matchIndex] = {};
-            matchDetails[matchIndex].t1Scorers = document.getElementById(`t1-scorers-${matchIndex}`).value;
-            matchDetails[matchIndex].t1Cards = document.getElementById(`t1-cards-${matchIndex}`).value;
-            matchDetails[matchIndex].t2Scorers = document.getElementById(`t2-scorers-${matchIndex}`).value;
-            matchDetails[matchIndex].t2Cards = document.getElementById(`t2-cards-${matchIndex}`).value;
+            matchDetails[matchIndex].t1Scorers = t1ScorersArr.join(', ');
+            matchDetails[matchIndex].t1Cards = t1CardsArr.join(', ');
+            matchDetails[matchIndex].t2Scorers = t2ScorersArr.join(', ');
+            matchDetails[matchIndex].t2Cards = t2CardsArr.join(', ');
             matchDetails[matchIndex].notes = document.getElementById(`notes-${matchIndex}`).value;
 
             document.getElementById('loading-overlay').style.display = 'flex';
@@ -1406,27 +1489,33 @@
                         </div>
 
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 10px;">
+                            <!-- Tim 1 Detail -->
                             <div style="background: #fff; padding: 10px; border-radius: 5px; border: 1px solid #ddd;">
                                 <strong style="font-size: 12px; color: var(--primary-color);">Tim 1: ${t1}</strong>
-                                <div style="margin-top:5px;">
-                                    <label style="font-size:11px;">Pencetak Gol & Menit:</label>
-                                    <input type="text" id="t1-scorers-${i}" class="schedule-input" value="${detail.t1Scorers || ''}" placeholder="Cth: Budi 15', 48'">
+                                <div style="margin-top:8px;">
+                                    <label style="font-size:11px; font-weight:bold;">⚽ Pencetak Gol:</label>
+                                    <div id="t1-scorers-list-${i}" style="margin-top: 4px; margin-bottom: 5px;"></div>
+                                    <button type="button" onclick="addGoalRow(${i}, 1)" style="background:var(--primary-color); color:white; border:none; padding:3px 8px; border-radius:3px; font-size:10px; cursor:pointer;">+ Tambah Gol</button>
                                 </div>
-                                <div style="margin-top:5px;">
-                                    <label style="font-size:11px;">Kartu (Kuning/Merah):</label>
-                                    <input type="text" id="t1-cards-${i}" class="schedule-input" value="${detail.t1Cards || ''}" placeholder="Cth: Andi (Kun)">
+                                <div style="margin-top:10px;">
+                                    <label style="font-size:11px; font-weight:bold;">🟨 Kartu:</label>
+                                    <div id="t1-cards-list-${i}" style="margin-top: 4px; margin-bottom: 5px;"></div>
+                                    <button type="button" onclick="addCardRow(${i}, 1)" style="background:#d9534f; color:white; border:none; padding:3px 8px; border-radius:3px; font-size:10px; cursor:pointer;">+ Tambah Kartu</button>
                                 </div>
                             </div>
 
+                            <!-- Tim 2 Detail -->
                             <div style="background: #fff; padding: 10px; border-radius: 5px; border: 1px solid #ddd;">
                                 <strong style="font-size: 12px; color: #d9534f;">Tim 2: ${t2}</strong>
-                                <div style="margin-top:5px;">
-                                    <label style="font-size:11px;">Pencetak Gol & Menit:</label>
-                                    <input type="text" id="t2-scorers-${i}" class="schedule-input" value="${detail.t2Scorers || ''}" placeholder="Cth: Toni 70'">
+                                <div style="margin-top:8px;">
+                                    <label style="font-size:11px; font-weight:bold;">⚽ Pencetak Gol:</label>
+                                    <div id="t2-scorers-list-${i}" style="margin-top: 4px; margin-bottom: 5px;"></div>
+                                    <button type="button" onclick="addGoalRow(${i}, 2)" style="background:var(--primary-color); color:white; border:none; padding:3px 8px; border-radius:3px; font-size:10px; cursor:pointer;">+ Tambah Gol</button>
                                 </div>
-                                <div style="margin-top:5px;">
-                                    <label style="font-size:11px;">Kartu (Kuning/Merah):</label>
-                                    <input type="text" id="t2-cards-${i}" class="schedule-input" value="${detail.t2Cards || ''}" placeholder="Cth: Dedi (Mer)">
+                                <div style="margin-top:10px;">
+                                    <label style="font-size:11px; font-weight:bold;">🟨 Kartu:</label>
+                                    <div id="t2-cards-list-${i}" style="margin-top: 4px; margin-bottom: 5px;"></div>
+                                    <button type="button" onclick="addCardRow(${i}, 2)" style="background:#d9534f; color:white; border:none; padding:3px 8px; border-radius:3px; font-size:10px; cursor:pointer;">+ Tambah Kartu</button>
                                 </div>
                             </div>
                         </div>
@@ -1439,6 +1528,64 @@
                         <button onclick="saveMatchScoreAndDetail(${i})" style="margin-top:12px; padding:6px 15px; background:var(--primary-color); color:white; border:none; border-radius:4px; cursor:pointer; font-weight:bold;">Simpan Status & Match ${i+1}</button>
                     </div>
                 `;
+
+                // Inisialisasi baris gol & kartu yang sudah tersimpan sebelumnya (jika ada)
+                populateExistingMatchDetails(i, detail);
+            }
+        }
+
+        // Fungsi membantu mengisi ulang baris dropdown saat load form skor
+        function populateExistingMatchDetails(matchIdx, detail) {
+            if (detail.t1Scorers) {
+                let parts = detail.t1Scorers.split(',');
+                parts.forEach(part => {
+                    let clean = part.trim();
+                    if (!clean) return;
+                    let matchMin = clean.match(/\((.*?)\)/);
+                    let min = matchMin ? matchMin[1] : '';
+                    let pName = clean.replace(/\s*\(.*?\)/g, '').trim();
+                    addGoalRow(matchIdx, 1, pName, min);
+                });
+            }
+
+            if (detail.t1Cards) {
+                let parts = detail.t1Cards.split(',');
+                parts.forEach(part => {
+                    let clean = part.trim();
+                    if (!clean) return;
+                    let matchMin = clean.match(/\((.*?)\)/);
+                    let min = matchMin ? matchMin[1] : '';
+                    let sub = clean.replace(/\s*\(.*?\)/g, '').trim();
+                    let cardType = sub.includes('Merah') ? '🟥 Merah' : '🟨 Kuning';
+                    let pName = sub.replace(/-\s*[🟨🟥].*/, '').trim();
+                    addCardRow(matchIdx, 1, pName, cardType, min);
+                });
+            }
+
+            if (detail.t2Scorers) {
+                let parts = detail.t2Scorers.split(',');
+                parts.forEach(part => {
+                    let clean = part.trim();
+                    if (!clean) return;
+                    let matchMin = clean.match(/\((.*?)\)/);
+                    let min = matchMin ? matchMin[1] : '';
+                    let pName = clean.replace(/\s*\(.*?\)/g, '').trim();
+                    addGoalRow(matchIdx, 2, pName, min);
+                });
+            }
+
+            if (detail.t2Cards) {
+                let parts = detail.t2Cards.split(',');
+                parts.forEach(part => {
+                    let clean = part.trim();
+                    if (!clean) return;
+                    let matchMin = clean.match(/\((.*?)\)/);
+                    let min = matchMin ? matchMin[1] : '';
+                    let sub = clean.replace(/\s*\(.*?\)/g, '').trim();
+                    let cardType = sub.includes('Merah') ? '🟥 Merah' : '🟨 Kuning';
+                    let pName = sub.replace(/-\s*[🟨🟥].*/, '').trim();
+                    addCardRow(matchIdx, 2, pName, cardType, min);
+                });
             }
         }
 
