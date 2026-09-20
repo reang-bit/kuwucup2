@@ -13,66 +13,84 @@
             --text-color: #333333;
             --border-color: #d4af37;
         }
+        * {
+            box-sizing: border-box;
+        }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: var(--bg-color);
             color: #fff;
             margin: 0;
             padding: 0;
+            -webkit-tap-highlight-color: transparent;
         }
         header {
             background: linear-gradient(135deg, #1b4d3e, #0a1f18);
             color: white;
-            padding: 20px;
+            padding: 25px 15px;
             text-align: center;
             border-bottom: 3px solid var(--accent-color);
             box-shadow: 0 4px 15px rgba(0,0,0,0.4);
         }
         header h1 {
             margin: 0;
-            font-size: 28px;
+            font-size: 22px;
             color: var(--accent-color);
             text-shadow: 2px 2px 4px rgba(0,0,0,0.6);
-            letter-spacing: 1px;
+            letter-spacing: 0.5px;
         }
         header p {
-            margin: 5px 0 0 0;
-            font-size: 14px;
+            margin: 8px 0 0 0;
+            font-size: 13px;
             opacity: 0.9;
         }
         .container {
             max-width: 1600px;
-            margin: 20px auto;
-            padding: 0 15px;
+            margin: 15px auto;
+            padding: 0 10px;
         }
+
+        /* Navigasi Tab Profesional & Mobile Scrollable */
         .nav-tabs {
             display: flex;
-            justify-content: center;
-            gap: 10px;
+            gap: 8px;
             margin-bottom: 20px;
-            flex-wrap: wrap;
+            overflow-x: auto;
+            white-space: nowrap;
+            padding: 5px 5px 10px 5px;
+            scrollbar-width: thin;
+            scrollbar-color: var(--accent-color) rgba(255,255,255,0.1);
+        }
+        .nav-tabs::-webkit-scrollbar {
+            height: 6px;
+        }
+        .nav-tabs::-webkit-scrollbar-thumb {
+            background-color: var(--accent-color);
+            border-radius: 10px;
         }
         .nav-btn {
             background-color: #ffffff;
             border: 2px solid var(--accent-color);
             color: var(--primary-color);
-            padding: 9px 15px;
+            padding: 10px 18px;
             font-size: 13px;
             font-weight: bold;
             border-radius: 30px;
             cursor: pointer;
             transition: all 0.3s ease;
             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            flex-shrink: 0;
         }
         .nav-btn.active, .nav-btn:hover {
             background-color: var(--accent-color);
             color: #000;
         }
+
         .section {
             display: none;
             background: var(--card-bg);
             color: var(--text-color);
-            padding: 25px;
+            padding: 20px 15px;
             border-radius: 12px;
             box-shadow: 0 4px 20px rgba(0,0,0,0.3);
             margin-bottom: 30px;
@@ -80,6 +98,14 @@
         .section.active {
             display: block;
         }
+        .section h2 {
+            font-size: 18px;
+            margin-top: 0;
+            color: var(--primary-color);
+            border-bottom: 2px solid #eee;
+            padding-bottom: 8px;
+        }
+
         /* Modal Universal */
         .modal-overlay {
             position: fixed;
@@ -89,35 +115,38 @@
             justify-content: center;
             align-items: center;
             z-index: 1000;
+            padding: 15px;
         }
         .modal-content {
             background: white;
             color: #333;
-            padding: 30px;
-            border-radius: 10px;
-            width: 480px;
-            max-width: 90%;
+            padding: 20px;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 480px;
             text-align: center;
             box-shadow: 0 5px 25px rgba(0,0,0,0.5);
             max-height: 90vh;
             overflow-y: auto;
         }
         .modal-content input, .modal-content textarea, .modal-content select {
-            width: 90%;
-            padding: 10px;
-            margin: 10px 0;
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
             border: 1px solid #ccc;
-            border-radius: 5px;
+            border-radius: 6px;
             font-size: 14px;
         }
         .modal-content button {
             background-color: var(--primary-color);
             color: white;
             border: none;
-            padding: 10px 20px;
-            border-radius: 5px;
+            padding: 12px 20px;
+            border-radius: 6px;
             font-size: 15px;
             cursor: pointer;
+            width: 100%;
+            margin-top: 5px;
         }
         .error-msg {
             color: red;
@@ -125,24 +154,25 @@
             margin-top: 5px;
             display: none;
         }
+
         /* Loader Overlay */
         #loading-overlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(15, 46, 36, 0.85);
+            background: rgba(15, 46, 36, 0.9);
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             z-index: 2000;
             color: var(--accent-color);
-            font-size: 18px;
+            font-size: 16px;
             font-weight: bold;
         }
         .spinner {
             border: 4px solid rgba(255, 255, 255, 0.3);
-            width: 50px;
-            height: 50px;
+            width: 45px;
+            height: 45px;
             border-radius: 50%;
             border-left-color: var(--accent-color);
             animation: spin 1s linear infinite;
@@ -152,21 +182,23 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+
         /* Bracket Layout */
         .bracket-container {
             overflow-x: auto;
-            padding: 20px 0;
+            padding: 10px 0;
+            -webkit-overflow-scrolling: touch;
         }
         .bracket-layout {
             display: grid;
-            grid-template-columns: 1fr 280px 1fr;
-            gap: 20px;
-            min-width: 1300px;
+            grid-template-columns: 1fr 260px 1fr;
+            gap: 15px;
+            min-width: 1100px;
             align-items: center;
         }
         .bracket-side {
             display: flex;
-            gap: 15px;
+            gap: 12px;
             justify-content: space-between;
         }
         .bracket-column {
@@ -181,29 +213,29 @@
             font-weight: bold;
             background: var(--primary-color);
             color: var(--accent-color);
-            padding: 8px;
+            padding: 8px 4px;
             border-radius: 5px;
-            font-size: 12px;
+            font-size: 11px;
             margin-bottom: 8px;
             border: 1px solid var(--accent-color);
         }
         .match-card {
             background: #fff;
-            border: 1px solid #ccc;
+            border: 1px solid #d1d5db;
             border-radius: 6px;
-            padding: 6px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.08);
+            padding: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.06);
             font-size: 11px;
             cursor: pointer;
             transition: all 0.2s;
         }
         .match-card:hover {
             border-color: var(--primary-color);
-            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.12);
         }
         .match-status-badge {
             font-size: 9px;
-            margin-bottom: 2px;
+            margin-bottom: 3px;
             text-align: center;
             font-weight: bold;
             display: flex;
@@ -215,9 +247,9 @@
             font-size: 8.5px;
             color: #555;
             background: #f1f5f9;
-            padding: 2px 4px;
+            padding: 3px 6px;
             border-radius: 3px;
-            margin-bottom: 4px;
+            margin-bottom: 5px;
             text-align: center;
             border: 1px solid #e2e8f0;
             white-space: nowrap;
@@ -234,7 +266,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 3px 5px;
+            padding: 4px 6px;
             margin: 2px 0;
             background: #f8f9fa;
             border-radius: 3px;
@@ -243,11 +275,11 @@
         .team-score {
             font-weight: bold;
             background: #e2e8f0;
-            padding: 1px 6px;
+            padding: 2px 6px;
             border-radius: 3px;
             font-size: 10px;
             color: #1b4d3e;
-            min-width: 14px;
+            min-width: 16px;
             text-align: center;
         }
         .center-stage {
@@ -256,7 +288,7 @@
             align-items: center;
             justify-content: center;
             background: #153b2f;
-            padding: 20px;
+            padding: 15px;
             border-radius: 12px;
             border: 2px solid var(--accent-color);
             box-shadow: 0 0 15px rgba(212, 175, 55, 0.3);
@@ -264,19 +296,25 @@
         }
         .center-stage h3 {
             color: var(--accent-color);
-            margin: 5px 0 15px 0;
-            font-size: 16px;
+            margin: 5px 0 12px 0;
+            font-size: 14px;
         }
         .trophy-box {
-            font-size: 40px;
-            margin: 10px 0;
+            font-size: 35px;
+            margin: 5px 0;
         }
+
         /* Teams Grid */
         .teams-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            gap: 15px;
+            grid-template-columns: 1fr;
+            gap: 10px;
             margin-top: 15px;
+        }
+        @media(min-width: 768px) {
+            .teams-grid {
+                grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            }
         }
         .team-input-group {
             display: flex;
@@ -287,79 +325,95 @@
             font-weight: bold;
             width: 30px;
             color: var(--primary-color);
+            flex-shrink: 0;
         }
         .team-input-group input {
             flex: 1;
-            padding: 8px 12px;
+            padding: 10px;
             border: 1px solid #ccc;
             border-radius: 6px;
             font-size: 14px;
         }
+
         /* List Tim Publik Grid */
         .teams-list-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-            gap: 15px;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
             margin-top: 15px;
+        }
+        @media(min-width: 768px) {
+            .teams-list-grid {
+                grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            }
         }
         .team-card-item {
             background: #f8f9fa;
-            border: 1px solid #ddd;
+            border: 1px solid #e2e8f0;
             border-radius: 8px;
-            padding: 15px;
+            padding: 12px 8px;
             text-align: center;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.04);
             transition: all 0.2s;
         }
         .team-card-item:hover {
             border-color: var(--primary-color);
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
         }
         .team-card-item h4 {
-            margin: 0 0 10px 0;
+            margin: 0 0 8px 0;
             color: var(--primary-color);
-            font-size: 15px;
+            font-size: 13px;
         }
 
         .btn-action {
             background-color: var(--accent-color);
             color: #000;
             border: none;
-            padding: 12px 25px;
-            font-size: 16px;
+            padding: 12px 20px;
+            font-size: 15px;
             font-weight: bold;
-            border-radius: 6px;
+            border-radius: 8px;
             cursor: pointer;
             margin-top: 20px;
+            width: 100%;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+        }
+        @media(min-width: 768px) {
+            .btn-action {
+                width: auto;
+            }
         }
         .btn-action:hover {
             background-color: #c19b2e;
         }
+
         /* Tables */
         table.schedule-table, table.topscorer-table {
             width: 100%;
             border-collapse: collapse;
             margin-top: 15px;
+            font-size: 12px;
         }
         table.schedule-table th, table.schedule-table td, 
         table.topscorer-table th, table.topscorer-table td {
-            border: 1px solid #ddd;
-            padding: 10px 12px;
+            border: 1px solid #e2e8f0;
+            padding: 8px 10px;
             text-align: left;
-            font-size: 13px;
         }
         table.schedule-table th, table.topscorer-table th {
             background-color: var(--primary-color);
             color: white;
+            font-size: 12px;
         }
         table.schedule-table tr:nth-child(even), table.topscorer-table tr:nth-child(even) {
             background-color: #fcfcfc;
         }
         .schedule-input {
-            padding: 6px;
+            padding: 8px;
             border: 1px solid #ccc;
-            border-radius: 4px;
-            font-size: 12px;
+            border-radius: 6px;
+            font-size: 13px;
             width: 100%;
             box-sizing: border-box;
         }
@@ -368,39 +422,67 @@
             color: #333;
             border-left: 4px solid #ffc107;
             padding: 12px;
-            margin-bottom: 20px;
-            font-size: 14px;
-            border-radius: 0 4px 4px 0;
+            margin-bottom: 15px;
+            font-size: 13px;
+            border-radius: 0 6px 6px 0;
         }
         .score-input {
-            width: 40px;
+            width: 45px;
             text-align: center;
             border: 1px solid #ccc;
-            border-radius: 3px;
-            padding: 4px;
+            border-radius: 4px;
+            padding: 6px;
+            font-size: 14px;
         }
         .btn-detail-small {
             background-color: var(--primary-color);
             color: white;
             border: none;
-            padding: 5px 10px;
+            padding: 6px 10px;
             border-radius: 4px;
-            font-size: 12px;
+            font-size: 11px;
             cursor: pointer;
+            font-weight: bold;
         }
+
+        /* Match Block di Admin Skor */
+        .match-score-block {
+            background: #f8f9fa;
+            padding: 12px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            color: #333;
+        }
+        .match-score-header {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: var(--primary-color);
+            font-size: 13px;
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 6px;
+        }
+        .match-ctrl-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 12px;
+            background: #fff;
+            padding: 10px;
+            border-radius: 6px;
+            flex-wrap: wrap;
+            align-items: center;
+            border: 1px solid #eee;
+        }
+
         footer {
             background-color: #0a1f18;
             color: #aaa;
             text-align: center;
-            padding: 15px;
-            font-size: 13px;
+            padding: 20px 15px;
+            font-size: 12px;
             border-top: 1px solid rgba(212, 175, 55, 0.3);
-            margin-top: auto;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 5px;
-            flex-wrap: wrap;
+            margin-top: 30px;
+            line-height: 1.5;
         }
         footer span {
             color: var(--accent-color);
@@ -419,43 +501,43 @@
     <!-- Password Modal -->
     <div id="auth-modal" class="modal-overlay">
         <div class="modal-content">
-            <h3>Autentikasi Admin</h3>
-            <p>Masukkan password untuk mengakses fitur ini:</p>
+            <h3 style="color:var(--primary-color); margin-top:0;">Autentikasi Admin</h3>
+            <p style="font-size: 13px; color:#666;">Masukkan password untuk mengakses fitur ini:</p>
             <input type="password" id="admin-password" placeholder="Password..." onkeypress="handlePasswordKey(event)">
             <br>
             <button onclick="verifyPassword()">Masuk</button>
             <div id="error-msg" class="error-msg">Password salah! Silakan coba lagi.</div>
-            <br><br>
-            <button style="background:#666; font-size:12px; padding:6px 12px;" onclick="closeModal('auth-modal')">Batal</button>
+            <br>
+            <button style="background:#666; font-size:13px; margin-top: 5px;" onclick="closeModal('auth-modal')">Batal</button>
         </div>
     </div>
 
     <!-- Modal Lihat Detail Pertandingan (Publik) -->
     <div id="detail-modal" class="modal-overlay">
-        <div class="modal-content" style="width: 520px; text-align: left;">
-            <h3 id="detail-match-title" style="color: var(--primary-color); text-align: center; margin-top:0;">Detail Pertandingan</h3>
-            <div id="detail-match-info" style="font-size: 13px; color: #333; text-align: center; margin-bottom: 15px; font-weight: bold; background: #e2e8f0; padding: 8px; border-radius: 5px;"></div>
+        <div class="modal-content" style="text-align: left;">
+            <h3 id="detail-match-title" style="color: var(--primary-color); text-align: center; margin-top:0; font-size: 16px;">Detail Pertandingan</h3>
+            <div id="detail-match-info" style="font-size: 12px; color: #333; text-align: center; margin-bottom: 15px; font-weight: bold; background: #e2e8f0; padding: 8px; border-radius: 6px;"></div>
             
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+            <div style="display: grid; grid-template-columns: 1fr; gap: 10px; margin-bottom: 12px;">
                 <div style="background: #f8f9fa; padding: 10px; border-radius: 6px; border-left: 4px solid var(--primary-color);">
                     <strong id="modal-t1-name" style="font-size: 12px; color: var(--primary-color);">Tim 1</strong>
                     <div style="font-size: 11px; margin-top: 6px;">⚽ <strong>Pencetak Gol:</strong></div>
-                    <div id="view-t1-scorers" style="font-size: 12px; color: #333; min-height: 20px;">-</div>
+                    <div id="view-t1-scorers" style="font-size: 12px; color: #333; min-height: 18px;">-</div>
                     <div style="font-size: 11px; margin-top: 6px;">🟨 <strong>Kartu:</strong></div>
-                    <div id="view-t1-cards" style="font-size: 12px; color: #333; min-height: 20px;">-</div>
+                    <div id="view-t1-cards" style="font-size: 12px; color: #333; min-height: 18px;">-</div>
                 </div>
                 <div style="background: #f8f9fa; padding: 10px; border-radius: 6px; border-left: 4px solid #d9534f;">
                     <strong id="modal-t2-name" style="font-size: 12px; color: #d9534f;">Tim 2</strong>
                     <div style="font-size: 11px; margin-top: 6px;">⚽ <strong>Pencetak Gol:</strong></div>
-                    <div id="view-t2-scorers" style="font-size: 12px; color: #333; min-height: 20px;">-</div>
+                    <div id="view-t2-scorers" style="font-size: 12px; color: #333; min-height: 18px;">-</div>
                     <div style="font-size: 11px; margin-top: 6px;">🟨 <strong>Kartu:</strong></div>
-                    <div id="view-t2-cards" style="font-size: 12px; color: #333; min-height: 20px;">-</div>
+                    <div id="view-t2-cards" style="font-size: 12px; color: #333; min-height: 18px;">-</div>
                 </div>
             </div>
 
             <div style="margin-bottom: 15px;">
-                <label style="font-weight: bold; font-size: 12px;">📝 Catatan Pertandingan / Wasit:</label>
-                <div id="view-notes" style="background: #f8f9fa; padding: 8px; border-radius: 5px; font-size: 12px; margin-top: 4px; min-height: 25px; color:#333;">-</div>
+                <label style="font-weight: bold; font-size: 11px;">📝 Catatan Pertandingan / Wasit:</label>
+                <div id="view-notes" style="background: #f8f9fa; padding: 8px; border-radius: 6px; font-size: 12px; margin-top: 4px; min-height: 25px; color:#333;">-</div>
             </div>
 
             <div style="text-align: center;">
@@ -466,9 +548,9 @@
 
     <!-- Modal Detail Team (Publik / Lihat Pemain Tim) -->
     <div id="team-detail-modal" class="modal-overlay">
-        <div class="modal-content" style="width: 450px; text-align: left;">
-            <h3 id="modal-team-title" style="color: var(--primary-color); text-align: center; margin-top:0;">Detail Tim</h3>
-            <p style="font-size: 12px; color: #666; text-align: center; margin-bottom: 15px;">Daftar Skuad Pemain Terdaftar</p>
+        <div class="modal-content" style="text-align: left;">
+            <h3 id="modal-team-title" style="color: var(--primary-color); text-align: center; margin-top:0; font-size: 16px;">Detail Tim</h3>
+            <p style="font-size: 12px; color: #666; text-align: center; margin-bottom: 12px;">Daftar Skuad Pemain Terdaftar</p>
             
             <div style="background: #f8f9fa; padding: 12px; border-radius: 6px; border: 1px solid #ddd; max-height: 250px; overflow-y: auto;">
                 <ul id="modal-team-players-list" style="margin: 0; padding-left: 20px; font-size: 13px; color: #333;">
@@ -476,53 +558,49 @@
                 </ul>
             </div>
 
-            <div style="text-align: center; margin-top: 20px;">
+            <div style="text-align: center; margin-top: 15px;">
                 <button onclick="closeModal('team-detail-modal')" style="background: #666; width: 100%;">Tutup</button>
             </div>
         </div>
     </div>
 
     <header>
-        <h1>TURNAMEN KUWU CUP 2 - DESA JAGAPURA LOR 2026</h1>
-        <p>BAGAN KUWU CUP 2 DESA JAGAPURA LOR 2026</p>
+        <h1>TURNAMEN KUWU CUP 2</h1>
+        <p>Desa Jagapura Lor 2026</p>
     </header>
 
     <div class="container">
-        <!-- Navigasi Menu -->
+        <!-- Navigasi Menu (Mobile Scrollable) -->
         <div class="nav-tabs">
-            <button class="nav-btn active" onclick="switchTab('bracket')">Bagan Turnamen</button>
+            <button class="nav-btn active" onclick="switchTab('bracket')">🏆 Bagan Turnamen</button>
             <button class="nav-btn" onclick="switchTab('teams-list')">📋 Daftar Team</button>
             <button class="nav-btn" onclick="switchTab('topscorer')">⚽ Top Scorer</button>
-            <button class="nav-btn" onclick="requestAdminTab('teams')">1. Input Nama Team (Admin)</button>
-            <button class="nav-btn" onclick="requestAdminTab('schedule')">2. Pengaturan Jadwal (Admin)</button>
-            <button class="nav-btn" onclick="requestAdminTab('scores')">3. Input Skor & Detail (Admin)</button>
-            <button class="nav-btn" onclick="requestAdminTab('players')">4. Input Daftar Pemain (Admin)</button>
+            <button class="nav-btn" onclick="requestAdminTab('teams')">1. Input Nama Team</button>
+            <button class="nav-btn" onclick="requestAdminTab('schedule')">2. Pengaturan Jadwal</button>
+            <button class="nav-btn" onclick="requestAdminTab('scores')">3. Input Skor & Detail</button>
+            <button class="nav-btn" onclick="requestAdminTab('players')">4. Input Daftar Pemain</button>
         </div>
 
         <!-- TAB: DAFTAR TEAM (PUBLIK & AKSI DETAIL TEAM) -->
         <div id="tab-teams-list" class="section">
-            <h2>Daftar 32 Tim Peserta Kuwu Cup 2 2026</h2>
-            <p>Berikut adalah daftar seluruh tim yang berpartisipasi. Klik tombol <strong>Detail Tim</strong> untuk melihat daftar pemain.</p>
-            <div class="teams-list-grid" id="public-teams-grid">
-                <!-- Diisi otomatis via JS -->
-            </div>
+            <h2>Daftar 32 Tim Peserta</h2>
+            <p style="font-size: 13px; color:#555;">Berikut adalah daftar seluruh tim yang berpartisipasi. Klik tombol <strong>Detail Tim</strong> untuk melihat daftar pemain.</p>
+            <div class="teams-list-grid" id="public-teams-grid"></div>
         </div>
 
         <!-- TAB: INPUT DAFTAR PEMAIN -->
         <div id="tab-players" class="section">
-            <h2>Input Daftar Pemain per Tim</h2>
-            <p>Pilih tim di bawah ini untuk memasukkan daftar nama pemainnya (pisahkan dengan baris baru atau koma):</p>
+            <h2>Input Daftar Pemain</h2>
+            <p style="font-size: 13px; color:#555;">Pilih tim di bawah ini untuk memasukkan daftar nama pemain (pisahkan dengan baris baru):</p>
             
-            <div style="margin-bottom: 15px;">
-                <label style="font-weight: bold;">Pilih Tim:</label>
-                <select id="select-team-players" class="schedule-input" style="max-width: 300px; margin-top: 5px;" onchange="loadTeamPlayersInput()">
-                    <!-- Dinamis via JS -->
-                </select>
+            <div style="margin-bottom: 12px;">
+                <label style="font-weight: bold; font-size: 12px;">Pilih Tim:</label>
+                <select id="select-team-players" class="schedule-input" style="margin-top: 5px;" onchange="loadTeamPlayersInput()"></select>
             </div>
 
             <div style="margin-bottom: 15px;">
-                <label style="font-weight: bold; display: block; margin-bottom: 5px;">Daftar Nama Pemain (Satu nama per baris):</label>
-                <textarea id="textarea-team-players" rows="10" class="schedule-input" placeholder="Contoh:&#10;Budi (Kapten)&#10;Andi&#10;Toni"></textarea>
+                <label style="font-weight: bold; display: block; margin-bottom: 5px; font-size: 12px;">Daftar Nama Pemain (Satu nama per baris):</label>
+                <textarea id="textarea-team-players" rows="8" class="schedule-input" placeholder="Contoh:&#10;Budi (Kapten)&#10;Andi&#10;Toni"></textarea>
             </div>
 
             <button class="btn-action" onclick="saveTeamPlayersData()">Simpan Pemain Tim Ini</button>
@@ -530,10 +608,10 @@
         
         <!-- TAB 1: BAGAN TURNAMEN -->
         <div id="tab-bracket" class="section active">
-            <h2>Bagan Resmi Kuwu Cup 2 Desa Jagapura Lor 2026</h2>
+            <h2>Bagan Resmi Kuwu Cup 2 2026</h2>
             <div class="notice">
-                <strong>Informasi:</strong> Libur pertandingan pada : <span style="color:#d9534f; font-weight:bold;">Rabu, 21 Oktober 2026 & Sabtu, 24 Oktober 2026</span><br>
-                <em>Informasi selengkapnya bisa hubungi panitia Kuwu Cup 2 Desa Jagapura Lor 2026.</em>
+                <strong>Informasi:</strong> Libur pertandingan pada : <span style="color:#d9534f; font-weight:bold;">Rabu, 21 Okt & Sabtu, 24 Okt 2026</span><br>
+                <em style="font-size:12px;">Geser layar ke samping (kiri/kanan) untuk melihat keseluruhan bagan turnamen.</em>
             </div>
             
             <div class="bracket-container">
@@ -543,20 +621,20 @@
 
         <!-- TAB 2: TOP SCORER -->
         <div id="tab-topscorer" class="section">
-            <h2>Daftar Pencetak Gol Terbanyak (Top Scorer)</h2>
-            <p>Akumulasi gol seluruh pemain dari semua pertandingan yang telah dimainkan:</p>
+            <h2>Top Scorer (Pencetak Gol)</h2>
+            <p style="font-size: 13px; color:#555;">Akumulasi gol seluruh pemain dari semua pertandingan:</p>
             <div style="overflow-x: auto;">
                 <table class="topscorer-table">
                     <thead>
                         <tr>
-                            <th style="width: 50px; text-align:center;">No</th>
+                            <th style="width: 40px; text-align:center;">No</th>
                             <th>Nama Pemain</th>
                             <th>Tim / Klub</th>
-                            <th style="width: 100px; text-align:center;">Jumlah Gol (⚽)</th>
+                            <th style="width: 80px; text-align:center;">Gol (⚽)</th>
                         </tr>
                     </thead>
                     <tbody id="topscorer-tbody">
-                        <tr><td colspan="4" style="text-align: center;">Belum ada data gol yang tercatat.</td></tr>
+                        <tr><td colspan="4" style="text-align: center;">Belum ada data gol tercatat.</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -564,26 +642,26 @@
 
         <!-- TAB 3: INPUT NAMA TEAM -->
         <div id="tab-teams" class="section">
-            <h2>Input 32 Nama Tim Peserta (16 Kiri, 16 Kanan)</h2>
-            <p>Masukkan nama 32 tim yang bertanding di Kuwu Cup 2 2026:</p>
+            <h2>Input 32 Nama Tim Peserta</h2>
+            <p style="font-size: 13px; color:#555;">Masukkan nama 32 tim yang bertanding:</p>
             <div class="teams-grid" id="teams-input-container"></div>
-            <button class="btn-action" onclick="saveTeams()">Simpan Daftar Tim & Perbarui Bagan</button>
+            <button class="btn-action" onclick="saveTeams()">Simpan Daftar Tim & Perbarui</button>
         </div>
 
         <!-- TAB 4: JADWAL PERTANDINGAN -->
         <div id="tab-schedule" class="section">
-            <h2>Pengaturan Jadwal, Hari, Tanggal, & Jam Pertandingan</h2>
-            <p>Admin dapat mengubah tanggal, hari, jam, dan keterangan pertandingan di bawah ini:</p>
+            <h2>Pengaturan Jadwal & Waktu</h2>
+            <p style="font-size: 13px; color:#555;">Sesuaikan tanggal, hari, jam, dan keterangan pertandingan:</p>
             <div style="overflow-x: auto;">
                 <table class="schedule-table">
                     <thead>
                         <tr>
-                            <th>No</th>
+                            <th style="width: 35px;">No</th>
                             <th>Babak / Match</th>
                             <th>Tim 1 vs Tim 2</th>
                             <th>Hari, Tanggal & Jam</th>
-                            <th>Keterangan / Status</th>
-                            <th>Aksi</th>
+                            <th>Keterangan</th>
+                            <th style="width: 50px;">Aksi</th>
                         </tr>
                     </thead>
                     <tbody id="schedule-tbody"></tbody>
@@ -594,13 +672,13 @@
 
         <!-- TAB 5: INPUT SKOR & DETAIL -->
         <div id="tab-scores" class="section">
-            <h2>Input Skor, Status Live, & Detail Pertandingan</h2>
-            <p>Atur status (Akan Main, LIVE, HT, Selesai/FT), masukkan skor, pilih pencetak gol serta kartu dari skuad tim:</p>
+            <h2>Input Skor, Status & Detail Pertandingan</h2>
+            <p style="font-size: 13px; color:#555;">Atur status live, skor, pencetak gol, dan kartu pemain:</p>
             <div id="match-scores-container"></div>
         </div>
 
         <footer>
-            &copy; 2026 <span>By : Hanip Anpal, S.Pd</span>. All Rights Reserved. | Kuwu Cup 2 Jagapura Lor.
+            &copy; 2026 <span>By : Hanip Anpal, S.Pd</span>. All Rights Reserved.<br>Kuwu Cup 2 Jagapura Lor.
         </footer>
     </div>
 
@@ -612,7 +690,7 @@
         let scoresData = Array.from({length: 31}, () => ({s1: '', s2: '', status: 'UPCOMING', liveTime: '00:00', startTime: null}));
         let matchDetails = {}; 
         let matchTimers = {}; 
-        let teamPlayers = {}; // Penyimpanan data pemain per tim
+        let teamPlayers = {};
 
         let matchSchedules = Array.from({length: 31}, (_, i) => {
             let babak = "32 Besar (Sisi Kiri)";
@@ -681,7 +759,7 @@
                     matchDetails = result.matchDetails;
                 }
             } catch (error) {
-                console.error("Gagal memuat data ....", error);
+                console.error("Gagal memuat data:", error);
             } finally {
                 document.getElementById('loading-overlay').style.display = 'none';
                 renderBracket();
@@ -776,7 +854,7 @@
                 container.innerHTML += `
                     <div class="team-card-item">
                         <h4>${idx + 1}. ${tName}</h4>
-                        <button class="btn-detail-small" onclick="showTeamDetailModal('${tName}')">🔍 Detail Tim</button>
+                        <button class="btn-detail-small" onclick="showTeamDetailModal('${tName}')">🔍 Detail Skuad</button>
                     </div>
                 `;
             });
@@ -946,7 +1024,6 @@
             document.getElementById('detail-modal').style.display = 'flex';
         }
 
-        // Helper untuk tambah baris pencetak gol dinamis dari dropdown pemain
         function addGoalRow(matchIdx, teamSlot, playerName = '', minute = '') {
             const container = document.getElementById(`t${teamSlot}-scorers-list-${matchIdx}`);
             let tName = getTeamNameForMatch(matchIdx, teamSlot);
@@ -959,18 +1036,17 @@
             });
 
             let rowDiv = document.createElement('div');
-            rowDiv.style.cssText = "display: flex; gap: 5px; margin-bottom: 5px; align-items: center;";
+            rowDiv.style.cssText = "display: flex; gap: 5px; margin-bottom: 6px; align-items: center;";
             rowDiv.innerHTML = `
-                <select class="schedule-input scorer-player-sel" style="flex:2;">
+                <select class="schedule-input scorer-player-sel" style="flex:2; padding:6px; font-size:12px;">
                     ${optionsHtml}
                 </select>
-                <input type="text" class="schedule-input scorer-min-inp" style="flex:1;" placeholder="Menit (cth: 15')" value="${minute}">
-                <button type="button" onclick="this.parentElement.remove()" style="background:#d9534f; color:white; border:none; border-radius:3px; padding:4px 8px; cursor:pointer; font-size:11px;">✕</button>
+                <input type="text" class="schedule-input scorer-min-inp" style="flex:1; padding:6px; font-size:12px;" placeholder="Menit" value="${minute}">
+                <button type="button" onclick="this.parentElement.remove()" style="background:#d9534f; color:white; border:none; border-radius:4px; padding:6px 10px; cursor:pointer; font-size:12px;">✕</button>
             `;
             container.appendChild(rowDiv);
         }
 
-        // Helper untuk tambah baris kartu dinamis dari dropdown pemain
         function addCardRow(matchIdx, teamSlot, playerName = '', cardType = 'Kuning', minute = '') {
             const container = document.getElementById(`t${teamSlot}-cards-list-${matchIdx}`);
             let tName = getTeamNameForMatch(matchIdx, teamSlot);
@@ -983,17 +1059,17 @@
             });
 
             let rowDiv = document.createElement('div');
-            rowDiv.style.cssText = "display: flex; gap: 5px; margin-bottom: 5px; align-items: center;";
+            rowDiv.style.cssText = "display: flex; gap: 5px; margin-bottom: 6px; align-items: center;";
             rowDiv.innerHTML = `
-                <select class="schedule-input card-player-sel" style="flex:2;">
+                <select class="schedule-input card-player-sel" style="flex:2; padding:6px; font-size:12px;">
                     ${optionsHtml}
                 </select>
-                <select class="schedule-input card-type-sel" style="flex:1;">
+                <select class="schedule-input card-type-sel" style="flex:1; padding:6px; font-size:12px;">
                     <option value="🟨 Kuning" ${cardType.includes('Kuning') ? 'selected' : ''}>🟨 Kuning</option>
                     <option value="🟥 Merah" ${cardType.includes('Merah') ? 'selected' : ''}>🟥 Merah</option>
                 </select>
-                <input type="text" class="schedule-input card-min-inp" style="flex:1;" placeholder="Menit" value="${minute}">
-                <button type="button" onclick="this.parentElement.remove()" style="background:#d9534f; color:white; border:none; border-radius:3px; padding:4px 8px; cursor:pointer; font-size:11px;">✕</button>
+                <input type="text" class="schedule-input card-min-inp" style="flex:1; padding:6px; font-size:12px;" placeholder="Menit" value="${minute}">
+                <button type="button" onclick="this.parentElement.remove()" style="background:#d9534f; color:white; border:none; border-radius:4px; padding:6px 10px; cursor:pointer; font-size:12px;">✕</button>
             `;
             container.appendChild(rowDiv);
         }
@@ -1004,7 +1080,6 @@
             scoresData[matchIndex].status = document.getElementById(`status-${matchIndex}`).value;
             scoresData[matchIndex].liveTime = document.getElementById(`livetime-${matchIndex}`).value;
 
-            // Kumpulkan data gol Tim 1 dari baris dinamis
             let t1ScorersArr = [];
             document.querySelectorAll(`#t1-scorers-list-${matchIndex} > div`).forEach(row => {
                 let p = row.querySelector('.scorer-player-sel').value;
@@ -1012,7 +1087,6 @@
                 if(p) t1ScorersArr.push(m ? `${p} (${m})` : p);
             });
 
-            // Kumpulkan data kartu Tim 1
             let t1CardsArr = [];
             document.querySelectorAll(`#t1-cards-list-${matchIndex} > div`).forEach(row => {
                 let p = row.querySelector('.card-player-sel').value;
@@ -1021,7 +1095,6 @@
                 if(p) t1CardsArr.push(m ? `${p} - ${c} (${m})` : `${p} - ${c}`);
             });
 
-            // Kumpulkan data gol Tim 2
             let t2ScorersArr = [];
             document.querySelectorAll(`#t2-scorers-list-${matchIndex} > div`).forEach(row => {
                 let p = row.querySelector('.scorer-player-sel').value;
@@ -1029,7 +1102,6 @@
                 if(p) t2ScorersArr.push(m ? `${p} (${m})` : p);
             });
 
-            // Kumpulkan data kartu Tim 2
             let t2CardsArr = [];
             document.querySelectorAll(`#t2-cards-list-${matchIndex} > div`).forEach(row => {
                 let p = row.querySelector('.card-player-sel').value;
@@ -1097,7 +1169,6 @@
 
             startGlobalLiveTicker(matchIndex);
             saveMatchScoreAndDetailSilent(matchIndex);
-
             alert(`Match ${matchIndex + 1}: Timer live real-time dimulai.`);
         }
 
@@ -1283,13 +1354,13 @@
 
             let centerHTML = `
                 <div class="center-stage">
-                    <div style="font-size:11px; font-weight:bold; color:var(--accent-color);"> KUWU CUP 2 <br> DESA JAGAPURA LOR</div>
+                    <div style="font-size:10px; font-weight:bold; color:var(--accent-color);">KUWU CUP 2<br>JAGAPURA LOR</div>
                     <div class="trophy-box">🏆</div>
                     <h3>BAGAN UTAMA</h3>
                     
                     ${generateCenterCard(28, "SEMIFINAL (I)")}
                     ${generateCenterCard(29, "SEMIFINAL (II)")}
-                    ${generateCenterCard(30, "FINAL KUWU CUP 2 DESA JAGAPURA LOR", true)}
+                    ${generateCenterCard(30, "FINAL KUWU CUP 2", true)}
                 </div>
             `;
 
@@ -1328,13 +1399,13 @@
                 let displayTime = scoreState.liveTime || '00:00';
                 if (displayTime.length > 10 || displayTime.includes('1899')) displayTime = '00:00';
 
-                let statusBadge = `<span class="badge-upcoming">⏰ Belum Main</span>`;
+                let statusBadge = `<span class="badge-upcoming">⏰ Belum</span>`;
                 if (scoreState.status === 'LIVE') {
                     statusBadge = `<span class="badge-live match-badge-${mIdx}">● LIVE ${displayTime}</span>`;
                 } else if (scoreState.status === 'HT') {
-                    statusBadge = `<span class="badge-ht">⏸ HT (${displayTime})</span>`;
+                    statusBadge = `<span class="badge-ht">⏸ HT</span>`;
                 } else if (scoreState.status === 'FT') {
-                    statusBadge = `<span class="badge-ft">✓ FT (Selesai)</span>`;
+                    statusBadge = `<span class="badge-ft">✓ FT</span>`;
                 }
 
                 html += `
@@ -1345,11 +1416,11 @@
                         </div>
                         <div class="match-time-sub" title="${matchSch.datetime}">📅 ${matchSch.datetime}</div>
                         <div class="team-row">
-                            <span>${t1}</span>
+                            <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:140px;">${t1}</span>
                             <span class="team-score">${score1}</span>
                         </div>
                         <div class="team-row">
-                            <span>${t2}</span>
+                            <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:140px;">${t2}</span>
                             <span class="team-score">${score2}</span>
                         </div>
                     </div>
@@ -1369,13 +1440,13 @@
             let displayTime = scoreState.liveTime || '00:00';
             if (displayTime.length > 10 || displayTime.includes('1899')) displayTime = '00:00';
 
-            let statusBadge = `<span style="color:#666;">⏰ Belum Main</span>`;
+            let statusBadge = `<span style="color:#666;">⏰ Belum</span>`;
             if (scoreState.status === 'LIVE') {
                 statusBadge = `<span class="badge-live match-badge-${mIdx}">● LIVE ${displayTime}</span>`;
             } else if (scoreState.status === 'HT') {
-                statusBadge = `<span class="badge-ht">⏸ HT (${displayTime})</span>`;
+                statusBadge = `<span class="badge-ht">⏸ HT</span>`;
             } else if (scoreState.status === 'FT') {
-                statusBadge = `<span class="badge-ft">✓ FT (Selesai)</span>`;
+                statusBadge = `<span class="badge-ft">✓ FT</span>`;
             }
 
             let bgStyle = isFinal ? "background:var(--accent-color); color:#000;" : "background:#fff; color:#333;";
@@ -1387,8 +1458,8 @@
                         ${statusBadge}
                     </div>
                     <div class="match-time-sub" style="background:${isFinal ? '#e6c555' : '#f1f5f9'}; color:${isFinal ? '#111' : '#555'}; border:none;" title="${matchSch.datetime}">📅 ${matchSch.datetime}</div>
-                    <div style="font-weight:bold; font-size:11px;">${t1} <span style="float:right;">${score1} - ${score2}</span></div>
-                    <div style="font-weight:bold; font-size:11px;">${t2}</div>
+                    <div style="font-weight:bold; font-size:11px;">${t1} <span style="float:right;">${score1}</span></div>
+                    <div style="font-weight:bold; font-size:11px; margin-top:2px;">${t2} <span style="float:right;">${score2}</span></div>
                 </div>
             `;
         }
@@ -1401,12 +1472,12 @@
                 let match = matchSchedules[i];
                 tbody.innerHTML += `
                     <tr>
-                        <td>${i + 1}</td>
-                        <td><strong>${match.babak}</strong> (Match ${i+1})</td>
+                        <td style="text-align:center;">${i + 1}</td>
+                        <td><strong>${match.babak}</strong> (M-${i+1})</td>
                         <td>${getTeamNameForMatch(i, 1)} vs ${getTeamNameForMatch(i, 2)}</td>
                         <td><input type="text" class="schedule-input" id="sched-time-${i}" value="${match.datetime}"></td>
                         <td><input type="text" class="schedule-input" id="sched-ket-${i}" value="${match.ket}"></td>
-                        <td><button class="btn-detail-small" onclick="showMatchDetail(${i})">Detail</button></td>
+                        <td style="text-align:center;"><button class="btn-detail-small" onclick="showMatchDetail(${i})">Detail</button></td>
                     </tr>
                 `;
             }
@@ -1442,7 +1513,7 @@
 
         function renderScoresInput() {
             const container = document.getElementById('match-scores-container');
-            container.innerHTML = '<h3>Pengaturan Live, Skor, & Detail Pertandingan</h3>';
+            container.innerHTML = '<h3 style="font-size:15px; color:var(--primary-color);">Kelola Skor & Detail Pertandingan</h3>';
             
             for (let i = 0; i < 31; i++) {
                 let t1 = getTeamNameForMatch(i, 1);
@@ -1454,32 +1525,32 @@
                 if (cleanLiveTime.length > 10 || cleanLiveTime.includes('1899')) cleanLiveTime = '00:00';
 
                 container.innerHTML += `
-                    <div style="background:#f9f9f9; padding:15px; margin-bottom:15px; border-radius:8px; border:1px solid #ddd; color:#333;" id="match-block-${i}">
-                        <div style="font-weight:bold; margin-bottom:10px; color:var(--primary-color);">
+                    <div class="match-score-block" id="match-block-${i}">
+                        <div class="match-score-header">
                             Match ${i+1} (${matchSchedules[i].babak}): ${t1} vs ${t2}
                         </div>
                         
-                        <div style="display:flex; align-items:center; gap:15px; margin-bottom:12px; background:#fff; padding:10px; border-radius:5px; flex-wrap:wrap;">
-                            <div>
-                                <label style="font-weight:bold; font-size:12px; display:block;">Status Laga:</label>
-                                <select id="status-${i}" class="schedule-input" style="width:130px;" onchange="handleStatusChange(${i})">
+                        <div class="match-ctrl-row">
+                            <div style="flex:1; min-width:130px;">
+                                <label style="font-weight:bold; font-size:11px; display:block; margin-bottom:3px;">Status Laga:</label>
+                                <select id="status-${i}" class="schedule-input" style="padding:6px; font-size:12px;" onchange="handleStatusChange(${i})">
                                     <option value="UPCOMING" ${scoreState.status === 'UPCOMING' ? 'selected' : ''}>⏰ Belum Main</option>
                                     <option value="LIVE" ${scoreState.status === 'LIVE' ? 'selected' : ''}>● LIVE (Berjalan)</option>
                                     <option value="HT" ${scoreState.status === 'HT' ? 'selected' : ''}>⏸ HT (Half Time)</option>
                                     <option value="FT" ${scoreState.status === 'FT' ? 'selected' : ''}>✓ FT (Selesai)</option>
                                 </select>
                             </div>
-                            <div>
-                                <label style="font-weight:bold; font-size:12px; display:block;">Waktu (MM:SS):</label>
-                                <div style="display:flex; align-items:center; gap:5px;">
-                                    <input type="text" id="livetime-${i}" class="schedule-input" style="width:85px; text-align:center;" value="${cleanLiveTime}" placeholder="00:00">
-                                    <button type="button" onclick="startMatchTimer(${i})" style="background:#28a745; color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer; font-size:11px; font-weight:bold;">▶ Mulai</button>
-                                    <button type="button" onclick="pauseMatchTimer(${i})" style="background:#f0ad4e; color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer; font-size:11px; font-weight:bold;">⏸ Pause</button>
-                                    <button type="button" onclick="stopMatchTimer(${i})" style="background:#d9534f; color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer; font-size:11px; font-weight:bold;">⏹ Selesai</button>
+                            <div style="flex:1.5; min-width:200px;">
+                                <label style="font-weight:bold; font-size:11px; display:block; margin-bottom:3px;">Waktu & Kontrol Timer:</label>
+                                <div style="display:flex; align-items:center; gap:4px;">
+                                    <input type="text" id="livetime-${i}" class="schedule-input" style="width:70px; text-align:center; padding:6px; font-size:12px;" value="${cleanLiveTime}" placeholder="00:00">
+                                    <button type="button" onclick="startMatchTimer(${i})" style="background:#28a745; color:white; border:none; padding:6px 8px; border-radius:4px; cursor:pointer; font-size:11px; font-weight:bold;">▶ Mulai</button>
+                                    <button type="button" onclick="pauseMatchTimer(${i})" style="background:#f0ad4e; color:white; border:none; padding:6px 8px; border-radius:4px; cursor:pointer; font-size:11px; font-weight:bold;">⏸ HT</button>
+                                    <button type="button" onclick="stopMatchTimer(${i})" style="background:#d9534f; color:white; border:none; padding:6px 8px; border-radius:4px; cursor:pointer; font-size:11px; font-weight:bold;">⏹ FT</button>
                                 </div>
                             </div>
                             <div>
-                                <label style="font-weight:bold; font-size:12px; display:block;">Skor:</label>
+                                <label style="font-weight:bold; font-size:11px; display:block; margin-bottom:3px;">Skor:</label>
                                 <div style="display:flex; align-items:center; gap:5px;">
                                     <input type="number" id="score-1-${i}" class="score-input" min="0" value="${scoreState.s1}"> 
                                     <span>-</span> 
@@ -1488,53 +1559,51 @@
                             </div>
                         </div>
 
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 10px;">
+                        <div style="display: grid; grid-template-columns: 1fr; gap: 10px; margin-bottom: 10px;">
                             <!-- Tim 1 Detail -->
-                            <div style="background: #fff; padding: 10px; border-radius: 5px; border: 1px solid #ddd;">
+                            <div style="background: #fff; padding: 10px; border-radius: 6px; border: 1px solid #e2e8f0;">
                                 <strong style="font-size: 12px; color: var(--primary-color);">Tim 1: ${t1}</strong>
-                                <div style="margin-top:8px;">
+                                <div style="margin-top:6px;">
                                     <label style="font-size:11px; font-weight:bold;">⚽ Pencetak Gol:</label>
                                     <div id="t1-scorers-list-${i}" style="margin-top: 4px; margin-bottom: 5px;"></div>
-                                    <button type="button" onclick="addGoalRow(${i}, 1)" style="background:var(--primary-color); color:white; border:none; padding:3px 8px; border-radius:3px; font-size:10px; cursor:pointer;">+ Tambah Gol</button>
+                                    <button type="button" onclick="addGoalRow(${i}, 1)" style="background:var(--primary-color); color:white; border:none; padding:4px 10px; border-radius:4px; font-size:11px; cursor:pointer;">+ Tambah Gol</button>
                                 </div>
                                 <div style="margin-top:10px;">
                                     <label style="font-size:11px; font-weight:bold;">🟨 Kartu:</label>
                                     <div id="t1-cards-list-${i}" style="margin-top: 4px; margin-bottom: 5px;"></div>
-                                    <button type="button" onclick="addCardRow(${i}, 1)" style="background:#d9534f; color:white; border:none; padding:3px 8px; border-radius:3px; font-size:10px; cursor:pointer;">+ Tambah Kartu</button>
+                                    <button type="button" onclick="addCardRow(${i}, 1)" style="background:#d9534f; color:white; border:none; padding:4px 10px; border-radius:4px; font-size:11px; cursor:pointer;">+ Tambah Kartu</button>
                                 </div>
                             </div>
 
                             <!-- Tim 2 Detail -->
-                            <div style="background: #fff; padding: 10px; border-radius: 5px; border: 1px solid #ddd;">
+                            <div style="background: #fff; padding: 10px; border-radius: 6px; border: 1px solid #e2e8f0;">
                                 <strong style="font-size: 12px; color: #d9534f;">Tim 2: ${t2}</strong>
-                                <div style="margin-top:8px;">
+                                <div style="margin-top:6px;">
                                     <label style="font-size:11px; font-weight:bold;">⚽ Pencetak Gol:</label>
                                     <div id="t2-scorers-list-${i}" style="margin-top: 4px; margin-bottom: 5px;"></div>
-                                    <button type="button" onclick="addGoalRow(${i}, 2)" style="background:var(--primary-color); color:white; border:none; padding:3px 8px; border-radius:3px; font-size:10px; cursor:pointer;">+ Tambah Gol</button>
+                                    <button type="button" onclick="addGoalRow(${i}, 2)" style="background:var(--primary-color); color:white; border:none; padding:4px 10px; border-radius:4px; font-size:11px; cursor:pointer;">+ Tambah Gol</button>
                                 </div>
                                 <div style="margin-top:10px;">
                                     <label style="font-size:11px; font-weight:bold;">🟨 Kartu:</label>
                                     <div id="t2-cards-list-${i}" style="margin-top: 4px; margin-bottom: 5px;"></div>
-                                    <button type="button" onclick="addCardRow(${i}, 2)" style="background:#d9534f; color:white; border:none; padding:3px 8px; border-radius:3px; font-size:10px; cursor:pointer;">+ Tambah Kartu</button>
+                                    <button type="button" onclick="addCardRow(${i}, 2)" style="background:#d9534f; color:white; border:none; padding:4px 10px; border-radius:4px; font-size:11px; cursor:pointer;">+ Tambah Kartu</button>
                                 </div>
                             </div>
                         </div>
 
-                        <div>
-                            <label style="font-size:12px;">Catatan Tambahan Pertandingan:</label>
-                            <input type="text" id="notes-${i}" class="schedule-input" value="${detail.notes || ''}" placeholder="Catatan khusus wasit / jalannya laga">
+                        <div style="margin-top: 8px;">
+                            <label style="font-size:11px; font-weight:bold;">Catatan Pertandingan:</label>
+                            <input type="text" id="notes-${i}" class="schedule-input" value="${detail.notes || ''}" placeholder="Catatan khusus wasit / jalannya laga" style="margin-top:3px;">
                         </div>
 
-                        <button onclick="saveMatchScoreAndDetail(${i})" style="margin-top:12px; padding:6px 15px; background:var(--primary-color); color:white; border:none; border-radius:4px; cursor:pointer; font-weight:bold;">Simpan Status & Match ${i+1}</button>
+                        <button onclick="saveMatchScoreAndDetail(${i})" style="margin-top:12px; padding:8px 15px; background:var(--primary-color); color:white; border:none; border-radius:6px; cursor:pointer; font-weight:bold; width:100%; font-size:13px;">Simpan Match ${i+1}</button>
                     </div>
                 `;
 
-                // Inisialisasi baris gol & kartu yang sudah tersimpan sebelumnya (jika ada)
                 populateExistingMatchDetails(i, detail);
             }
         }
 
-        // Fungsi membantu mengisi ulang baris dropdown saat load form skor
         function populateExistingMatchDetails(matchIdx, detail) {
             if (detail.t1Scorers) {
                 let parts = detail.t1Scorers.split(',');
@@ -1589,7 +1658,6 @@
             }
         }
 
-        // Panggil fungsi saat halaman selesai dimuat
         window.onload = loadDataFromSheet;
     </script>
 </body>
