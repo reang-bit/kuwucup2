@@ -48,7 +48,7 @@
         .nav-tabs {
             display: flex;
             justify-content: center;
-            gap: 12px;
+            gap: 10px;
             margin-bottom: 20px;
             flex-wrap: wrap;
         }
@@ -56,8 +56,8 @@
             background-color: #ffffff;
             border: 2px solid var(--accent-color);
             color: var(--primary-color);
-            padding: 10px 18px;
-            font-size: 14px;
+            padding: 9px 15px;
+            font-size: 13px;
             font-weight: bold;
             border-radius: 30px;
             cursor: pointer;
@@ -295,6 +295,32 @@
             border-radius: 6px;
             font-size: 14px;
         }
+        /* List Tim Publik Grid */
+        .teams-list-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .team-card-item {
+            background: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            transition: all 0.2s;
+        }
+        .team-card-item:hover {
+            border-color: var(--primary-color);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        .team-card-item h4 {
+            margin: 0 0 10px 0;
+            color: var(--primary-color);
+            font-size: 15px;
+        }
+
         .btn-action {
             background-color: var(--accent-color);
             color: #000;
@@ -357,9 +383,9 @@
             background-color: var(--primary-color);
             color: white;
             border: none;
-            padding: 4px 8px;
+            padding: 5px 10px;
             border-radius: 4px;
-            font-size: 11px;
+            font-size: 12px;
             cursor: pointer;
         }
         footer {
@@ -438,20 +464,48 @@
         </div>
     </div>
 
+    <!-- Modal Detail Team (Publik / Lihat Pemain Tim) -->
+    <div id="team-detail-modal" class="modal-overlay">
+        <div class="modal-content" style="width: 450px; text-align: left;">
+            <h3 id="modal-team-title" style="color: var(--primary-color); text-align: center; margin-top:0;">Detail Tim</h3>
+            <p style="font-size: 12px; color: #666; text-align: center; margin-bottom: 15px;">Daftar Skuad Pemain Terdaftar</p>
+            
+            <div style="background: #f8f9fa; padding: 12px; border-radius: 6px; border: 1px solid #ddd; max-height: 250px; overflow-y: auto;">
+                <ul id="modal-team-players-list" style="margin: 0; padding-left: 20px; font-size: 13px; color: #333;">
+                    <li>Belum ada data pemain untuk tim ini.</li>
+                </ul>
+            </div>
+
+            <div style="text-align: center; margin-top: 20px;">
+                <button onclick="closeModal('team-detail-modal')" style="background: #666; width: 100%;">Tutup</button>
+            </div>
+        </div>
+    </div>
+
     <header>
         <h1>TURNAMEN KUWU CUP 2 - DESA JAGAPURA LOR 2026</h1>
         <p>BAGAN KUWU CUP 2 DESA JAGAPURA LOR 2026</p>
     </header>
 
     <div class="container">
-        <!-- Navigasi Menu Diperbarui -->
+        <!-- Navigasi Menu Ditambahkan Menu Daftar Team -->
         <div class="nav-tabs">
-            <button class="nav-btn active" onclick="switchTab('bracket')">Bagan Turnamen (Publik)</button>
+            <button class="nav-btn active" onclick="switchTab('bracket')">Bagan Turnamen</button>
+            <button class="nav-btn" onclick="switchTab('teams-list')">shield Daftar Team</button>
             <button class="nav-btn" onclick="switchTab('topscorer')">⚽ Top Scorer</button>
             <button class="nav-btn" onclick="requestAdminTab('teams')">1. Input Nama Team (Admin)</button>
             <button class="nav-btn" onclick="requestAdminTab('schedule')">2. Pengaturan Jadwal (Admin)</button>
             <button class="nav-btn" onclick="requestAdminTab('scores')">3. Input Skor & Detail (Admin)</button>
             <button class="nav-btn" onclick="requestAdminTab('players')">4. Input Daftar Pemain (Admin)</button>
+        </div>
+
+        <!-- TAB: DAFTAR TEAM (PUBLIK & AKSI DETAIL TEAM) -->
+        <div id="tab-teams-list" class="section">
+            <h2>Daftar 32 Tim Peserta Kuwu Cup 2 2026</h2>
+            <p>Berikut adalah daftar seluruh tim yang berpartisipasi. Klik tombol <strong>Detail Tim</strong> untuk melihat daftar pemain.</p>
+            <div class="teams-list-grid" id="public-teams-grid">
+                <!-- Diisi otomatis via JS -->
+            </div>
         </div>
 
         <!-- TAB: INPUT DAFTAR PEMAIN -->
@@ -632,6 +686,7 @@
                 document.getElementById('loading-overlay').style.display = 'none';
                 renderBracket();
                 renderTopScorers();
+                renderPublicTeamsList();
                 
                 scoresData.forEach((sc, idx) => {
                     if (sc.status === 'LIVE' && !matchTimers[idx]) {
@@ -679,6 +734,7 @@
             document.getElementById('loading-overlay').style.display = 'none';
             renderBracket();
             renderSchedule();
+            renderPublicTeamsList();
             switchTab('bracket');
         }
 
@@ -712,7 +768,39 @@
             if (event.key === 'Enter') verifyPassword();
         }
 
-        // Fungsi inisialisasi dropdown tim pada tab pemain
+        // Render Menu Daftar Tim Publik & Aksi Detail Team
+        function renderPublicTeamsList() {
+            const container = document.getElementById('public-teams-grid');
+            container.innerHTML = '';
+            
+            teams.forEach((tName, idx) => {
+                container.innerHTML += `
+                    <div class="team-card-item">
+                        <h4>${idx + 1}. ${tName}</h4>
+                        <button class="btn-detail-small" onclick="showTeamDetailModal('${tName}')">🔍 Detail Tim</button>
+                    </div>
+                `;
+            });
+        }
+
+        // Menampilkan Modal Detail Skuad Tim
+        function showTeamDetailModal(teamName) {
+            document.getElementById('modal-team-title').innerText = `Tim: ${teamName}`;
+            const listEl = document.getElementById('modal-team-players-list');
+            listEl.innerHTML = '';
+
+            let players = teamPlayers[teamName];
+            if (players && players.length > 0) {
+                players.forEach(p => {
+                    listEl.innerHTML += `<li>${p}</li>`;
+                });
+            } else {
+                listEl.innerHTML = `<li>Belum ada data pemain yang diinput untuk tim ini.</li>`;
+            }
+
+            document.getElementById('team-detail-modal').style.display = 'flex';
+        }
+
         function initPlayersTab() {
             const select = document.getElementById('select-team-players');
             select.innerHTML = '';
@@ -722,14 +810,12 @@
             loadTeamPlayersInput();
         }
 
-        // Memuat data pemain ke textarea sesuai tim yang dipilih di dropdown
         function loadTeamPlayersInput() {
             const selectedTeam = document.getElementById('select-team-players').value;
             const list = teamPlayers[selectedTeam] || [];
             document.getElementById('textarea-team-players').value = list.join('\n');
         }
 
-        // Menyimpan data pemain tim yang sedang aktif di textarea
         async function saveTeamPlayersData() {
             const selectedTeam = document.getElementById('select-team-players').value;
             const rawText = document.getElementById('textarea-team-players').value;
@@ -765,25 +851,29 @@
                 document.getElementById('tab-bracket').classList.add('active');
                 buttons[0].classList.add('active');
                 renderBracket();
+            } else if (tabId === 'teams-list') {
+                document.getElementById('tab-teams-list').classList.add('active');
+                buttons[1].classList.add('active');
+                renderPublicTeamsList();
             } else if (tabId === 'topscorer') {
                 document.getElementById('tab-topscorer').classList.add('active');
-                buttons[1].classList.add('active');
+                buttons[2].classList.add('active');
                 renderTopScorers();
             } else if (tabId === 'teams') {
                 document.getElementById('tab-teams').classList.add('active');
-                buttons[2].classList.add('active');
+                buttons[3].classList.add('active');
                 initTeamInputs();
             } else if (tabId === 'schedule') {
                 document.getElementById('tab-schedule').classList.add('active');
-                buttons[3].classList.add('active');
+                buttons[4].classList.add('active');
                 renderSchedule();
             } else if (tabId === 'scores') {
                 document.getElementById('tab-scores').classList.add('active');
-                buttons[4].classList.add('active');
+                buttons[5].classList.add('active');
                 renderScoresInput();
             } else if (tabId === 'players') {
                 document.getElementById('tab-players').classList.add('active');
-                buttons[5].classList.add('active');
+                buttons[6].classList.add('active');
                 initPlayersTab();
             }
         }
