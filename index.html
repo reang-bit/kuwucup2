@@ -106,6 +106,58 @@
             padding-bottom: 8px;
         }
 
+        /* Toggle Mode Bagan (Normal vs Sederhana/Mobile) */
+        .bracket-mode-toggle {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            justify-content: center;
+        }
+        .mode-btn {
+            background-color: #e2e8f0;
+            border: 1px solid #cbd5e1;
+            color: #334155;
+            padding: 6px 14px;
+            font-size: 12px;
+            font-weight: bold;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .mode-btn.active {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Simple Bracket Styles (Mobile Friendly) */
+        .simple-bracket-view {
+            display: none;
+        }
+        .simple-round-container {
+            margin-bottom: 20px;
+        }
+        .simple-round-header {
+            background: var(--primary-color);
+            color: var(--accent-color);
+            font-size: 13px;
+            font-weight: bold;
+            padding: 8px 12px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            border: 1px solid var(--accent-color);
+        }
+        .simple-matches-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 8px;
+        }
+        @media(min-width: 640px) {
+            .simple-matches-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
         /* Modal Universal */
         .modal-overlay {
             position: fixed;
@@ -611,11 +663,23 @@
             <h2>Bagan Resmi Kuwu Cup 2 2026</h2>
             <div class="notice">
                 <strong>Informasi:</strong> Libur pertandingan pada : <span style="color:#d9534f; font-weight:bold;">Rabu, 21 Oktober 2026 & Sabtu, 24 Oktober 2026</span><br>
-                <em style="font-size:12px;">Geser layar ke samping (kiri/kanan) untuk melihat keseluruhan bagan turnamen.</em>
+                <em style="font-size:12px;">Gunakan Mode Sederhana di bawah ini agar lebih mudah dilihat di layar HP, atau geser ke samping untuk melihat bagan penuh.</em>
+            </div>
+
+            <!-- Tombol Pengalih Mode Tampilan Bagan -->
+            <div class="bracket-mode-toggle">
+                <button id="btn-mode-normal" class="mode-btn active" onclick="setBracketMode('normal')">🖥️ Bagan Penuh (Desktop)</button>
+                <button id="btn-mode-simple" class="mode-btn" onclick="setBracketMode('simple')">📱 Mode Sederhana (Mobile)</button>
             </div>
             
-            <div class="bracket-container">
+            <!-- Tampilan Bagan Normal (Desktop) -->
+            <div id="bracket-normal-view" class="bracket-container">
                 <div class="bracket-layout" id="bracket-layout-view"></div>
+            </div>
+
+            <!-- Tampilan Bagan Mode Sederhana (Mobile Friendly) -->
+            <div id="bracket-simple-view" class="simple-bracket-view">
+                <div id="simple-bracket-content"></div>
             </div>
         </div>
 
@@ -691,6 +755,7 @@
         let matchDetails = {}; 
         let matchTimers = {}; 
         let teamPlayers = {};
+        let currentBracketMode = 'normal'; // 'normal' atau 'simple'
 
         let matchSchedules = Array.from({length: 31}, (_, i) => {
             let babak = "32 Besar (Sisi Kiri)";
@@ -950,6 +1015,28 @@
                 document.getElementById('tab-players').classList.add('active');
                 buttons[6].classList.add('active');
                 initPlayersTab();
+            }
+        }
+
+        // Fungsi Mengatur Mode Tampilan Bagan (Normal vs Sederhana)
+        function setBracketMode(mode) {
+            currentBracketMode = mode;
+            const btnNormal = document.getElementById('btn-mode-normal');
+            const btnSimple = document.getElementById('btn-mode-simple');
+            const viewNormal = document.getElementById('bracket-normal-view');
+            const viewSimple = document.getElementById('bracket-simple-view');
+
+            if (mode === 'simple') {
+                btnSimple.classList.add('active');
+                btnNormal.classList.remove('active');
+                viewNormal.style.display = 'none';
+                viewSimple.style.display = 'block';
+                renderSimpleBracket();
+            } else {
+                btnNormal.classList.add('active');
+                btnSimple.classList.remove('active');
+                viewNormal.style.display = 'block';
+                viewSimple.style.display = 'none';
             }
         }
         
@@ -1382,6 +1469,37 @@
             `;
 
             container.innerHTML = leftHTML + centerHTML + rightHTML;
+
+            // Jika sedang dalam mode simple, perbarui juga
+            if (currentBracketMode === 'simple') {
+                renderSimpleBracket();
+            }
+        }
+
+        // Fungsi Merender Tampilan Mode Sederhana (Per Babak Berurutan ke Bawah)
+        function renderSimpleBracket() {
+            const container = document.getElementById('simple-bracket-content');
+            
+            const rounds = [
+                { title: "🏆 Babak 32 Besar (Sisi Kiri & Kanan)", start: 0, count: 16 },
+                { title: "⭐ Babak 16 Besar", start: 16, count: 8 },
+                { title: "🔥 Babak Perempat Final", start: 24, count: 4 },
+                { title: "⚡ Babak Semifinal & Final", start: 28, count: 3 }
+            ];
+
+            let html = '';
+            rounds.forEach(round => {
+                html += `
+                    <div class="simple-round-container">
+                        <div class="simple-round-header">${round.title}</div>
+                        <div class="simple-matches-grid">
+                            ${generateMatchCardRange(round.start, round.count)}
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
         }
 
         function generateMatchCardRange(startMatchIdx, count) {
@@ -1411,16 +1529,16 @@
                 html += `
                     <div class="match-card" onclick="showMatchDetail(${mIdx})">
                         <div class="match-status-badge">
-                            <span>M-${mIdx+1}</span>
+                            <span>M-${mIdx+1} (${matchSchedules[mIdx] ? matchSchedules[mIdx].babak : ''})</span>
                             ${statusBadge}
                         </div>
                         <div class="match-time-sub" title="${matchSch.datetime}">📅 ${matchSch.datetime}</div>
                         <div class="team-row">
-                            <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:140px;">${t1}</span>
+                            <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:180px;">${t1}</span>
                             <span class="team-score">${score1}</span>
                         </div>
                         <div class="team-row">
-                            <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:140px;">${t2}</span>
+                            <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:180px;">${t2}</span>
                             <span class="team-score">${score2}</span>
                         </div>
                     </div>
